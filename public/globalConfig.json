@@ -1,0 +1,48 @@
+{
+  "availableLanguages": [
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "fr",
+      "name": "Français"
+    },
+    {
+      "code": "es",
+      "name": "Español"
+    },
+    {
+      "code": "zh-TW",
+      "name": "中文繁體"
+    },
+    {
+      "code": "zh-CN",
+      "name": "中文简体"
+    },
+    {
+      "code": "ko",
+      "name": "韩语"
+    },
+    {
+      "code": "ja",
+      "name": "日语"
+    },
+    {
+      "code": "vi",
+      "name": "越南语"
+    },
+    {
+      "code": "th",
+      "name": "泰语"
+    },
+    {
+      "code": "id",
+      "name": "印尼语"
+    }
+  ],
+  "logoPath": "/assets/logo.png",
+  "websiteTitle": "My Website",
+  "favicon": "/favicon.ico",
+  "themeColor": "#3498db"
+}

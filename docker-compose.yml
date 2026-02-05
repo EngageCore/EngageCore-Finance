@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  engagecore-backoffice:
+    image: engagecore-backoffice:latest
+    container_name: engagecore-backoffice
+    ports:
+      - "5174:5174"
+    restart: unless-stopped
+    networks:
+      - engagecore-network
+
+networks:
+  engagecore-network:
+    driver: bridge
+

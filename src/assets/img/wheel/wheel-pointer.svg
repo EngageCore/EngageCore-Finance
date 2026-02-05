@@ -1,0 +1,38 @@
+<!-- wheel-pointer-pro.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-70 -120 140 240" width="100%" height="100%">
+  <defs>
+    <!-- 紫色金属渐变 -->
+    <linearGradient id="pointerBody" x1="0" y1="-120" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9b6dff"/>
+      <stop offset="40%" stop-color="#5c31a6"/>
+      <stop offset="100%" stop-color="#2a124f"/>
+    </linearGradient>
+
+    <!-- 金属描边 -->
+    <linearGradient id="goldEdge" x1="0" y1="-120" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fceabb"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#8b6f2b"/>
+    </linearGradient>
+
+    <!-- 螺丝钮渐变 -->
+    <radialGradient id="screwBtn" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#dddddd"/>
+      <stop offset="100%" stop-color="#777777"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 指针主体 (有倒角的箭头) -->
+  <path d="M0,-120 L-30,60 Q0,90 30,60 Z"
+    fill="url(#pointerBody)" 
+    stroke="url(#goldEdge)" 
+    stroke-width="5"
+    stroke-linejoin="round"/>
+
+  <!-- 中心小螺丝钮 -->
+  <circle cx="0" cy="65" r="15" fill="url(#screwBtn)" stroke="url(#goldEdge)" stroke-width="3"/>
+
+  <!-- 螺丝钮高光 -->
+  <circle cx="-5" cy="60" r="5" fill="white" opacity="0.6"/>
+</svg>

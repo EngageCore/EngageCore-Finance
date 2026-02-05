@@ -1,0 +1,37 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 背景深紫径向渐变 -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="65%">
+      <stop offset="0%"  stop-color="#2a0a42"/>
+      <stop offset="70%" stop-color="#160226"/>
+      <stop offset="100%" stop-color="#0b0216"/>
+    </radialGradient>
+
+    <!-- 金色描边渐变 -->
+    <linearGradient id="goldStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#fff6d0"/>
+      <stop offset="50%"  stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#f5e6ca"/>
+    </linearGradient>
+
+    <!-- 柔光滤镜 -->
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- 主底盘圆 (r=220) -->
+  <circle cx="256" cy="256" r="220" fill="url(#bgGrad)" filter="url(#softGlow)"/>
+
+  <!-- 内圈金色高光 (增强立体感) -->
+  <circle cx="256" cy="256" r="212" fill="none" stroke="url(#goldStroke)" stroke-width="3" opacity="0.35"/>
+
+  <!-- 中心金属圆心 -->
+  <radialGradient id="hubFill" cx="40%" cy="35%" r="70%">
+    <stop offset="0%"  stop-color="#ffffff"/>
+    <stop offset="60%" stop-color="#d9d9d9"/>
+    <stop offset="100%" stop-color="#bfbfbf"/>
+  </radialGradient>
+  <circle cx="256" cy="256" r="64" fill="url(#hubFill)" stroke="url(#goldStroke)" stroke-width="2.5"/>
+</svg>
