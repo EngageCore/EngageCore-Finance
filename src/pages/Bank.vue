@@ -20,14 +20,14 @@
   </div>
 
   <!-- Modal -->
-  <bankModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :isEdit="isEdit" :formData="formData" @closeModal="closeModal" @saveChanges="handleSave" />
+  <BankModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :isEdit="isEdit" :formData="formData" @closeModal="closeModal" @saveChanges="handleSave" />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
 import DynamicSearchForm from '@/components/DynamicSearchForm.vue';
 import ReusableTable from '@/components/ReusableTable.vue';
-import bankModal from '@/components/Modal/bankModal.vue';
+import BankModal from '@/components/Modal/BankModal.vue';
 import { handleMessage } from '@/utils/notification';
 import { useI18n } from 'vue-i18n';
 import banksSeed from '@/mock/banks.json';

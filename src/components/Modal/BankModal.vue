@@ -1,6 +1,6 @@
 <template>
   <div class="modal-container">
-    <div v-if="isVisible" class="modal fade show" id="bankModal" tabindex="-1" aria-labelledby="bankModal" data-bs-keyboard="false" style="display: block;">
+    <div v-if="isVisible" class="modal fade show" id="BankModal" tabindex="-1" aria-labelledby="BankModal" data-bs-keyboard="false" style="display: block;">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-md">
         <div class="modal-content border-0 shadow-lg">
           <!-- Header -->
