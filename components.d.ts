@@ -7,28 +7,17 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AssignMembersModal: typeof import('./src/components/Modal/AssignMembersModal.vue')['default']
-    bankModal: typeof import('./src/components/Modal/bankModal.vue')['default']
     BankModal: typeof import('./src/components/Modal/BankModal.vue')['default']
     Breadcrumb: typeof import('./src/components/Breadcrumb.vue')['default']
-    ClaimModal: typeof import('./src/components/Modal/ClaimModal.vue')['default']
     DynamicSearchForm: typeof import('./src/components/DynamicSearchForm.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     Loader: typeof import('./src/components/Loader.vue')['default']
-    LuckyWheelModal: typeof import('./src/components/Modal/LuckyWheelModal.vue')['default']
-    MembershipModal: typeof import('./src/components/Modal/MembershipModal.vue')['default']
-    MissionsModal: typeof import('./src/components/Modal/MissionsModal.vue')['default']
     PermissionAccordion: typeof import('./src/components/PermissionAccordion.vue')['default']
     ReusableTable: typeof import('./src/components/ReusableTable.vue')['default']
-    RoleModal: typeof import('./src/components/Modal/RoleModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SideBar: typeof import('./src/components/SideBar.vue')['default']
     SidebarRight: typeof import('./src/components/SidebarRight.vue')['default']
-    SpinHistoryModal: typeof import('./src/components/Modal/SpinHistoryModal.vue')['default']
-    SyncPopup: typeof import('./src/components/Modal/SyncPopup.vue')['default']
     TransactionModal: typeof import('./src/components/Modal/TransactionModal.vue')['default']
-    UserModal: typeof import('./src/components/Modal/UserModal.vue')['default']
-    WheelPreviewModal: typeof import('./src/components/Modal/WheelPreviewModal.vue')['default']
   }
 }
