@@ -53,14 +53,15 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 
 //#region Form
-const { userStatusOptions, getUserStatusOptions } = useDropdown();
+const { roleOptions, getRoleOptions, userStatusOptions, getUserStatusOptions } = useDropdown();
 
 const fields = ref([
   { id: 'name', label: 'name', type: 'text', colClass: 'col-span-12 lg:col-span-3' },
+  { id: 'roleId', label: 'role', type: 'select', options: roleOptions, colClass: 'col-span-12 lg:col-span-3' },
   { id: 'statusId', label: 'status', type: 'select', options: userStatusOptions, colClass: 'col-span-12 lg:col-span-3' },
 ])
 
-const initialData = reactive({ startAt: null, endAt: null, statusId: 0 });
+const initialData = reactive({ statusId: 0, roleId: 0 });
 
 const handleSearch = (formData) => {
   Object.assign(initialData, formData);
@@ -72,12 +73,13 @@ const handleReset = () => {
   Object.keys(initialData).forEach(key => {
     delete initialData[key];
   });
-  Object.assign(initialData, { startAt: null, endAt: null, statusId: 0 });
+  Object.assign(initialData, { statusId: 0, roleId: 0 });
   fetchUserList();
 }
 
 onMounted(() => {
   getUserStatusOptions(true);
+  getRoleOptions(true);
 });
 //#endregion
 
