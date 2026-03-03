@@ -25,7 +25,7 @@ export const customModuleRoutes = [
       {
         name: 'management_role',
         path: 'role',
-        view: () => import("@/views/management/roleList.vue"),
+        view: () => import("@/views/management/role.vue"),
         meta: {
           title: 'role',
           i18nKey: 'role',

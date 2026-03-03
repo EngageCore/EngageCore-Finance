@@ -88,6 +88,7 @@ declare module 'vue' {
     ReusableModal: typeof import('./src/components/ReusableModal.vue')['default']
     ReusableSingleModal: typeof import('./src/components/ReusableSingleModal.vue')['default']
     ReusableTable: typeof import('./src/components/ReusableTable.vue')['default']
+    RoleModal: typeof import('./src/components/modal/RoleModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SecretGiftModal: typeof import('./src/components/modal/secretGiftModal.vue')['default']

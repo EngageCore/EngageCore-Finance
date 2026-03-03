@@ -127,7 +127,7 @@ const isWrapperScrollMode = computed(() => themeStore.layout.scrollMode === 'wra
         type="text"
         size="small"
         class="w-120px"
-        placeholder="GamingPro Games"
+        placeholder="EngageFinance"
       />
     </SettingItem>
     <SettingItem key="9" :label="$t('display_multilingual_button')">

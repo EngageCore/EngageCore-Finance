@@ -1,6 +1,6 @@
 const local = {
   system: {
-    title: 'GamingPro Games 管理系统',
+    title: 'EngageFinance 管理系统',
     updateTitle: '系统版本更新通知',
     updateContent: '检测到系统有新版本发布，是否立即刷新页面？',
     updateConfirm: '立即刷新',
@@ -37,6 +37,8 @@ const local = {
     pleaseCheckValue: '请检查输入的值是否合法',
     refresh: '刷新',
     reset: '重置',
+    role_created: '角色创建成功',
+    role_updated: '角色更新成功',
     search: '搜索',
     switch: '切换',
     tip: '提示',
@@ -240,10 +242,10 @@ const local = {
       projectNews: {
         title: '项目动态',
         moreNews: '更多动态',
-        desc1: 'GamingPro Games 项目在2021年5月28日创建!',
+        desc1: 'EngageFinance 项目在2021年5月28日创建!',
         desc2: '有用户向项目提交了一个bug，多标签栏不会自适应。',
-        desc3: '正在为 GamingPro Games 的发布做充分的准备工作!',
-        desc4: '正在忙于为 GamingPro Games 写项目说明文档！',
+        desc3: '正在为 EngageFinance 的发布做充分的准备工作!',
+        desc4: '正在忙于为 EngageFinance 写项目说明文档！',
         desc5: '工作台页面已经更新完成，可以查看了！'
       },
       creativity: '创意'

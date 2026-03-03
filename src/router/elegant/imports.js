@@ -18,5 +18,5 @@ export const views = {
   "iframe-page": () => import("@/views/_builtin/iframe-page/[url].vue"),
   login: () => import("@/views/_builtin/login/index.vue"),
   home: () => import("@/views/home/index.vue"),
-  'management_role': () => import("@/views/management/roleList.vue"),
+  'management_role': () => import("@/views/management/role.vue"),
 };

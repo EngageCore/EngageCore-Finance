@@ -58,7 +58,7 @@ export const themeSettings = {
   },
   watermark: {
     visible: false,
-    text: 'GamingPro Games',
+    text: 'EngageFinance',
     enableUserName: false
   },
   tokens: {

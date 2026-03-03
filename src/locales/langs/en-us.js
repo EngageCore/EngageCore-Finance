@@ -1,6 +1,6 @@
 const local = {
   system: {
-    title: 'GamingPro Games',
+    title: 'EngageFinance',
     updateTitle: 'System Version Update Notification',
     updateContent: 'A new version of the system has been detected. Do you want to refresh the page immediately?',
     updateConfirm: 'Refresh immediately',
@@ -37,6 +37,8 @@ const local = {
     pleaseCheckValue: 'Please check whether the value is valid',
     refresh: 'Refresh',
     reset: 'Reset',
+    role_created: 'Role Created',
+    role_updated: 'Role Updated',
     search: 'Search',
     switch: 'Switch',
     tip: 'Tip',
@@ -240,10 +242,10 @@ const local = {
       projectNews: {
         title: 'Project News',
         moreNews: 'More News',
-        desc1: 'GamingPro Games project was created on May 28, 2021!',
+        desc1: 'EngageFinance project was created on May 28, 2021!',
         desc2: 'A bug was submitted regarding multi-tab bar adaptation.',
-        desc3: 'Preparing for the next release of GamingPro Games!',
-        desc4: 'Working on project documentation for GamingPro Games!',
+        desc3: 'Preparing for the next release of EngageFinance!',
+        desc4: 'Working on project documentation for EngageFinance!',
         desc5: 'Workbench pages have been updated and are ready for review!'
       },
       creativity: 'Creativity'

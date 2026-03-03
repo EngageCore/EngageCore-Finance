@@ -1,6 +1,6 @@
 export const roleStatusEnum = Object.freeze({
   Active: { id: 1, name: 'active', tagType: 'success' },
-  Inactive: { id: 2, name: 'inactive', tagType: 'warning' },
+  Inactive: { id: 2, name: 'inactive', tagType: 'error' },
 });
 
 export const getRoleStatusNameById = (id) => {

@@ -2,7 +2,7 @@ import { defineConfig } from '@unocss/vite';
 import transformerDirectives from '@unocss/transformer-directives';
 import transformerVariantGroup from '@unocss/transformer-variant-group';
 import presetWind3 from '@unocss/preset-wind3';
-import { presetGamingProGames } from '@sa/uno-preset';
+import { presetEngageFinance } from '@sa/uno-preset';
 import { themeVars } from './src/theme/vars';
 
 export default defineConfig({
@@ -25,5 +25,5 @@ export default defineConfig({
     'card-wrapper': 'rd-8px shadow-sm'
   },
   transformers: [transformerDirectives(), transformerVariantGroup()],
-  presets: [presetWind3({ dark: 'class' }), presetGamingProGames()]
+  presets: [presetWind3({ dark: 'class' }), presetEngageFinance()]
 });

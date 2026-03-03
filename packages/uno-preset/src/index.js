@@ -1,6 +1,6 @@
 // @unocss-include
 
-export function presetGamingProGames() {
+export function presetEngageFinance() {
   const preset = {
     name: 'preset-gamingpro-games',
     shortcuts: [
@@ -50,4 +50,4 @@ export function presetGamingProGames() {
   return preset;
 }
 
-export default presetGamingProGames;
+export default presetEngageFinance;
