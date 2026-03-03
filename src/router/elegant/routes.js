@@ -1,0 +1,39 @@
+/* eslint-disable */
+/* prettier-ignore */
+
+// =====================
+// Custom Module Routes
+//
+// Add new feature modules here.
+// Each module follows the same pattern:
+// - Parent route with `layout: 'base'` and `children`
+// - Child routes with `view` pointing to the page component
+// =====================
+
+export const customModuleRoutes = [
+  {
+    name: 'management',
+    path: '/management',
+    layout: 'base',
+    meta: {
+      title: 'management',
+      i18nKey: 'management',
+      icon: 'fa6-solid:users-gear',
+      order: 6
+    },
+    children: [
+      {
+        name: 'management_role',
+        path: 'role',
+        view: () => import("@/views/management/roleList.vue"),
+        meta: {
+          title: 'role',
+          i18nKey: 'role',
+          icon: 'fa6-solid:user-shield',
+          order: 1,
+          keepAlive: true
+        }
+      }
+    ]
+  }
+];

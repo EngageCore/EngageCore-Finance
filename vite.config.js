@@ -1,59 +1,54 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+import process from 'node:process';
+import { URL, fileURLToPath } from 'node:url';
+import { defineConfig, loadEnv } from 'vite';
+import { setupVitePlugins } from './build/plugins';
+import { createViteProxy, getBuildTime } from './build/config';
 import path from 'path';
-import Components from "unplugin-vue-components/vite";
-import AutoImport from "unplugin-auto-import/vite";
 
-export default defineConfig({
-  plugins: [
-    vue(),
-    Components({
-      dirs: ["src/components"],
-      dts: true,
-    }),
-    AutoImport({
-      imports: [
-        "vue",
-        "vue-router",
-        "vuex",
-        "vue-i18n",
-        {
-          vuex: ["useStore"],
-          "vue-router": ["useRouter", "useRoute"],
-          "vue-i18n": ["useI18n"],
-          "@/utils/common": [
-            // Optimized path alias
-            "numberFormat",
-            "dateFormat",
-            "convertToUTC",
-            "setToken",
-            "getToken",
-            "removeToken",
-          ],
-        },
-      ],
-      dts: "./auto-imports.d.ts",
-      eslintrc: {
-        enabled: true,
-        filepath: "./.eslintrc-auto-import.json",
-        globalsPropValue: true,
-      },
-    }),
-  ],
-  server: {
-    port: 5174,
-    host: true,
-    watch: {
-      // Ignore icon-fonts directory to reduce file watchers
-      ignored: ['**/src/assets/icon-fonts/**', '**/node_modules/**']
-    }
-  },
-  resolve: {
-    alias: {
-      "@": "/src",
+export default defineConfig(configEnv => {
+  const viteEnv = loadEnv(configEnv.mode, process.cwd());
+
+  const buildTime = getBuildTime();
+
+  const enableProxy = configEnv.command === 'serve' && !configEnv.isPreview;
+
+  return {
+    base: viteEnv.VITE_BASE_URL,
+    resolve: {
+      alias: {
+        '~': fileURLToPath(new URL('./', import.meta.url)),
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
     },
-  },
-  define: {
-    "process.env": process.env,
-  }
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+          additionalData: `@use "@/styles/scss/global.scss" as *;`
+        }
+      }
+    },
+    plugins: setupVitePlugins(viteEnv, buildTime),
+    define: {
+      BUILD_TIME: JSON.stringify(buildTime)
+    },
+    server: {
+      host: '0.0.0.0',
+      port: 9527,
+      open: true,
+      proxy: createViteProxy(viteEnv, enableProxy)
+    },
+    preview: {
+      port: 9725
+    },
+    build: {
+      reportCompressedSize: false,
+      sourcemap: viteEnv.VITE_SOURCE_MAP === 'Y',
+      commonjsOptions: {
+        ignoreTryCatch: false
+      },
+      outDir: path.resolve(__dirname, "../server/public/dist"),
+      emptyOutDir: true,
+    }
+  };
 });

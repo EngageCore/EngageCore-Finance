@@ -1,0 +1,9 @@
+<script setup></script>
+
+<template>
+  <div class="h-full">
+    <iframe id="iframePage" class="size-full" :src="url"></iframe>
+  </div>
+</template>
+
+<style scoped></style>

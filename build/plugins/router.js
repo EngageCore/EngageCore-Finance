@@ -1,0 +1,39 @@
+import ElegantVueRouter from '@elegant-router/vue/vite';
+
+export function setupElegantRouter() {
+  return ElegantVueRouter({
+    layouts: {
+      base: 'src/layouts/base-layout/index.vue',
+      blank: 'src/layouts/blank-layout/index.vue'
+    },
+    routePathTransformer(routeName, routePath) {
+      const key = routeName;
+
+      if (key === 'login') {
+        const modules = ['pwd-login', 'code-login', 'register', 'reset-pwd', 'bind-wechat'];
+
+        const moduleReg = modules.join('|');
+
+        return `/login/:module(${moduleReg})?`;
+      }
+
+      return routePath;
+    },
+    onRouteMetaGen(routeName) {
+      const key = routeName;
+
+      const constantRoutes = ['login', '403', '404', '500'];
+
+      const meta = {
+        title: key,
+        i18nKey: `${key}`
+      };
+
+      if (constantRoutes.includes(key)) {
+        meta.constant = true;
+      }
+
+      return meta;
+    }
+  });
+}

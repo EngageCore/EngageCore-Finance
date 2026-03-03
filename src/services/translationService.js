@@ -1,31 +1,18 @@
-import axios from 'axios';
-
-const LINGVA_API = 'https://lingva.ml/api/v1'; // 你可以换成其他 Lingva 实例
-
-const language = [
-  { id: 1, name: 'English', code: 'en' },
-  { id: 2, name: 'Simplified Chinese', code: 'zh' }, // Lingva 用 zh，而不是 zh-CN
-  { id: 3, name: 'Malay', code: 'ms' },
-];
-
-export const getLanguageCode = (languageId) => {
-  return language.find(lang => lang.id === languageId)?.code || 'en';
-};
-
-export const getLanguageName = (languageId) => {
-  return language.find(lang => lang.id === languageId)?.name || 'English';
-};
-
+// 真正可用的 Google Translate 前端翻译（无 API key）
 export const translateText = async (text, sourceLang, targetLang) => {
   if (!text?.trim() || sourceLang === targetLang) return text;
 
   try {
-    const url = `${LINGVA_API}/${sourceLang}/${targetLang}/${encodeURIComponent(text)}`;
-    const response = await axios.get(url, { timeout: 15000 });
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(
+      text
+    )}`;
 
-    return response.data.translation || text;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    return data[0]?.map(item => item[0]).join('') || text;
   } catch (error) {
-    console.error('translateText error:', error);
+    console.error("Google translate error:", error);
     return text;
   }
 };
@@ -36,26 +23,31 @@ export const translateHtml = async (htmlContent, sourceLang, targetLang) => {
   const textMap = {};
   let counter = 0;
 
-  // 用占位符标记纯文本内容
   const htmlWithPlaceholders = htmlContent.replace(/>([^<]+)</g, (match, text) => {
     if (!text.trim()) return match;
-
     const id = counter++;
     textMap[id] = text.trim();
-
     return `>[[TRANSLATE:${id}]]<`;
   });
 
-  // 批量翻译（目前顺序执行）
   const translatedMap = {};
   for (const [id, text] of Object.entries(textMap)) {
     translatedMap[id] = await translateText(text, sourceLang, targetLang);
   }
 
-  // 替换回翻译内容
-  const finalHtml = htmlWithPlaceholders.replace(/\[\[TRANSLATE:(\d+)\]\]/g, (_, id) => {
+  return htmlWithPlaceholders.replace(/\[\[TRANSLATE:(\d+)\]\]/g, (_, id) => {
     return translatedMap[id] || textMap[id];
   });
-
-  return finalHtml;
 };
+
+const language = [
+  { id: 1, name: 'English', code: 'en' },
+  { id: 2, name: 'Simplified Chinese', code: 'zh-CN' },
+  { id: 3, name: 'Malay', code: 'ms' },
+];
+
+export const getLanguageCode = (languageId) =>
+  language.find(lang => lang.id === languageId)?.code || 'en';
+
+export const getLanguageName = (languageId) =>
+  language.find(lang => lang.id === languageId)?.name || 'English';

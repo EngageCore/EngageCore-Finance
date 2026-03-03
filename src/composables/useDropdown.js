@@ -1,63 +1,36 @@
 import { ref } from 'vue';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useCallApi } from '@/hooks/useCallApi';
-
-const { callApi } = useCallApi();
+import { useApiError } from '@/composables/useApiError';
+import { useI18n } from 'vue-i18n';
+import { roleStatusEnum } from '@/enum/roleStatus';
 
 export function useDropdown() {
-  const brands = ref([]);
-  const roles = ref([]);
-  const promotions = ref([]);
+  const authStore = useAuthStore();
+  const { t } = useI18n();
+  const { callApi } = useCallApi();
+  const { handleApiError } = useApiError();
 
-  const loadBrands = async (includeAll = true, t) => {
-    const resp = await callApi('/admin/brands', 'GET', null, { for_selection: true });
+  const roleStatusOptions = ref([]);
 
-    let options = resp.brands.map((option) => ({
-      value: option.id,
-      label: option.name,
+  const getRoleStatusOptions = async (includeAll = true) => {
+    let options = Object.values(roleStatusEnum).map(item => ({
+      label: t(item.name),
+      value: item.id
     }));
+
     if (includeAll) {
-      options = [{ value: '', label: t('all') }, ...options];
-    }
-    brands.value = options;
-  };
-
-  const loadRoles = async (includeAll = true, t) => {
-    const resp = await callApi('/admin/roles', 'GET', null, { for_selection: true });
-
-    let options = resp.roles.map((option) => ({
-      value: option.id,
-      label: option.name,
-    }));
-    if (includeAll) {
-      options = [{ value: '', label: t('all') }, ...options];
-    }
-    roles.value = options;
-  };
-
-  const loadPromotions = async (brandId, memberId = null, includeAll = true, t) => {
-    const params = {};
-    if (memberId) {
-      params.memberId = memberId;
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
     }
 
-    const resp = await callApi(`/admin/brands/${brandId}/promotions`, 'GET', null, params);
-
-    let options = resp.promotions.map((option) => ({
-      value: option.id,
-      label: option.name || option.title || `Promotion ${option.id}`,
-    }));
-    if (includeAll) {
-      options = [{ value: '', label: t('all') }, ...options];
-    }
-    promotions.value = options;
-  };
+    roleStatusOptions.value = options;
+  }
 
   return {
-    brands,
-    roles,
-    promotions,
-    loadBrands,
-    loadRoles,
-    loadPromotions,
+    roleStatusOptions,
+    getRoleStatusOptions,
   };
 }

@@ -1,327 +1,277 @@
 <template>
-  <div class="col-12 mb-3">
-    <!-- Accordion Component for Form -->
-    <div class="accordion" id="formAccordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="formAccordionHeading">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#formAccordionCollapse" aria-expanded="false" aria-controls="formAccordionCollapse">
-            {{ $t('form_filters')}}
-          </button>
-        </h2>
-        <div id="formAccordionCollapse" class="accordion-collapse collapse show" aria-labelledby="formAccordionHeading"
-          data-bs-parent="#formAccordion">
-          <div class="accordion-body">
-            <!-- Form Content -->
-            <div class="custom-card" :class="{ card: fields.length > 0 }">
-              <div class="card-body">
-                <form @submit.prevent="onSubmit" class="row g-3 needs-validation">
-                  <div v-for="(field, index) in fields" :key="index" :class="field.colClass || 'col-12'">
-                    <label :for="field.id" class="form-label">{{ $t(field.label) }}</label>
-                    <div>
-                      <!-- Custom Slot for Each Field -->
-                      <slot :name="`custom-${field.id}`" :field="field" :formData="formData">
-                        <!-- Default Rendering if Slot is Not Provided -->
-                        <template v-if="['text', 'number', 'date'].includes(field.type)">
-                          <input :type="field.type" :id="field.id" v-model="formData[field.id]" class="form-control"
-                            :placeholder="field.placeholder ? t(field.placeholder) : ''" @input="validateField(field)" />
-                        </template>
+  <div class="p-4 h-auto">
+    <div class="max-w-full mx-auto">
+      <n-card :segmented="true" size="small" class="shadow-sm rounded-lg overflow-auto">
+        <n-collapse :default-expanded-names="['form']">
+          <n-collapse-item name="form">
+            <template #header>
+              <n-text strong>{{ $t('form_filters') }}</n-text>
+            </template>
 
-                        <template v-else-if="field.type === 'select'">
-                          <vue-multiselect :id="field.id" v-model="formData[field.id]" :options="field.options"
-                            track-by="value" label="label" :placeholder="$t('select_an_option')" value="value" :searchable="true" :multiple="false"
-                            class="custom-multiselect" :class="{
-                              'is-invalid': field.isRequired && !formData[field.id],
-                              'is-valid': field.isRequired && formData[field.id],
-                            }" @select="instantReflectHandler(field)" />
-                        </template>
+            <n-form ref="formRef" :model="formData" :rules="rules" label-placement="top" class="grid grid-cols-12 gap-4">
+              <template v-for="(field, index) in fields" :key="index">
+                <n-form-item :label="$t(field.label)" :path="getFieldKey(field)" :class="field.colClass || 'col-span-12 lg:col-span-3'">
+                  <slot :name="`custom-${getFieldKey(field)}`" :field="field" :formData="formData">
 
-                        <template v-else-if="field.type === 'multiselect'">
-                          <vue-multiselect :id="field.id" v-model="formData[field.id]" :options="field.options"
-                            track-by="value" label="label" :placeholder="$t('select_an_option')" value="value" :multiple="true" :taggable="true"
-                            class="custom-multiselect" />
-                        </template>
-                      </slot>
+                    <!-- 普通输入 -->
+                    <n-input
+                      v-if="['text', 'number'].includes(field.type)"
+                      v-model:value="formData[getFieldKey(field)]"
+                      :type="field.type"
+                      clearable
+                      :placeholder="$t(field.placeholder || '')"
+                    />
 
-                      <div class="invalid-feedback" v-if="isEndDateField(field) && !validationState[field.id]"
-                        style="display: block;">
-                       {{ $t('end_date_greater_than_start')}}
-                      </div>
-                      <div class="invalid-feedback" v-else
-                        :style="{ display: validationState[field.id] ? 'none' : 'block' }">
-                        {{ `${$t(field.label)} ${$t('is_required')}` }}
-                      </div>
-                    </div>
-                  </div>
+                    <!-- 单日期 -->
+                    <n-date-picker
+                      v-else-if="field.type === 'date'"
+                      v-model:value="formData[getFieldKey(field)]"
+                      type="date"
+                      format="yyyy-MM-dd"
+                      clearable
+                      :is-date-disabled="field.maxToday ? disableAfterToday : undefined"
+                      :placeholder="$t(field.placeholder || '')"
+                    />
 
-                  <slot name="toolbars"></slot>
+                    <!-- 日期范围 -->
+                    <n-date-picker
+                      v-else-if="field.type === 'daterange'"
+                      v-model:value="formData[getFieldKey(field)]"
+                      type="daterange"
+                      format="yyyy-MM-dd"
+                      close-on-select
+                      clearable
+                      :placeholder="[$t('start_date'), $t('end_date')]"
+                    />
 
-                  <div class="mb-3 d-flex justify-content-end">
-                    <slot name="extra-button"></slot>
-                    <button v-if="showResetButton" class="btn btn-outline-primary" @click="onReset" type="button">
-                      {{ $t('reset') }}
-                    </button>
-                    <button v-if="showAddButton" class="btn btn-secondary ms-2" @click="onAdd"  type="button">
-                      {{ $t('add') }}
-                    </button>
-                    <button v-if="showSearchButton" class="btn btn-primary ms-2" type="submit">
-                      {{ $t('search') }}
-                    </button>
-                  </div>
-                </form>
+                    <!-- ✅ 动态远程单选 -->
+                    <n-select
+                      v-else-if="field.type === 'select'"
+                      v-model:value="formData[getFieldKey(field)]"
+                      clearable
+                      :options="field.options"
+                      :loading="field.loading"
+                      :placeholder="$t('select_an_option')"
+                      :filterable="!!field.isDynamic"
+                      :remote="!!field.isDynamic"
+                      @search="field.isDynamic ? handleRemoteSearch(field, $event) : null"
+                    />
+
+                    <!-- 多选 -->
+                    <n-select
+                      v-else-if="field.type === 'multiselect'"
+                      v-model:value="formData[getFieldKey(field)]"
+                      clearable
+                      multiple
+                      :options="field.options"
+                      :placeholder="$t('select_an_option')"
+                    />
+                  </slot>
+                </n-form-item>
+              </template>
+
+              <!-- ✅ 工具栏 -->
+              <slot name="toolbars"></slot>
+
+              <!-- ✅ 按钮区 -->
+              <div class="col-span-12 flex justify-end gap-2">
+                <slot name="extra-button"></slot>
+                <n-button v-if="showResetButton" @click="onReset" type="default">{{ $t('reset') }}</n-button>
+                <n-button v-if="showAddButton" @click="onAdd" type="warning">{{ $t('add') }}</n-button>
+                <n-button v-if="showSearchButton" type="primary" @click="onSubmit">{{ $t('search') }}</n-button>
               </div>
-              <div class="card-footer d-none border-top-0"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </n-form>
+          </n-collapse-item>
+        </n-collapse>
+      </n-card>
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { reactive, watch, nextTick } from 'vue';
-import VueMultiselect from 'vue-multiselect';
-import { handleMessage } from '@/utils/notification';
-import { Collapse } from 'bootstrap';
-import { useI18n } from "vue-i18n";
+import { reactive, ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useDebounceFn } from '@/composables/useDebounceFn' // ✅ 引入你自己的防抖函数
+import { formatDate } from '@/utils/common'
+import {
+  NCard, NForm, NFormItem, NInput, NSelect,
+  NDatePicker, NButton, NCollapse, NCollapseItem, NText
+} from 'naive-ui'
 
-const { t, locale } = useI18n();
+const { t } = useI18n()
+
 const props = defineProps({
-  fields: {
-    type: Array,
-    required: true,
-  },
-  initialData: {
-    type: Object,
-    default: () => ({}),
-  },
-  showResetButton: {
-    type: Boolean,
-    default: true,
-  },
-  showAddButton: {
-    type: Boolean,
-    default: false,
-  },
-  showSearchButton: {
-    type: Boolean,
-    default: true,
-  },
-  defaultData: {
-    type: Object,
-    default: () => ({}),
-  },
-  isAutoCollapse: {
-    type: Boolean,
-    default: false, 
-  },
-  // 新增属性：定义日期配对
-  datePairs: {
-    type: Array,
-    default: () => [
-      { start: 'startAt', end: 'endAt' },
-      { start: 'createdStartAt', end: 'createdEndAt' },
-      { start: 'updatedStartAt', end: 'updatedEndAt' },
-      { start: 'lastLoginStartAt', end: 'lastLoginEndAt' },
-      { start: 'refereeCreatedStartAt', end: 'refereeCreatedEndAt' },
-      { start: 'broadcastStartAt', end: 'broadcastEndAt' }
-    ],
-  },
-});
+  fields: { type: Array, required: true },
+  initialData: { type: Object, default: () => ({}) },
+  defaultData: { type: Object, default: () => ({}) },
+  showResetButton: { type: Boolean, default: true },
+  showAddButton: { type: Boolean, default: false },
+  showSearchButton: { type: Boolean, default: true }
+})
 
-const emit = defineEmits(['submit', 'add', 'update', 'reset']);
+const emit = defineEmits(['submit', 'add', 'reset'])
 
-const formData = reactive({});
-const validationState = reactive({});
-let messageShown = false;
+const formRef = ref(null)
+const formData = reactive({})
+const rules = reactive({})
 
-// 检查字段是否是结束日期字段
-const isEndDateField = (field) => {
-  return props.datePairs.some(pair => pair.end === field.id);
-};
+//#region helper
+const getFieldKey = (field) => Array.isArray(field.id) ? field.id.join('_') : field.id
 
-// 获取对应的开始日期字段ID
-const getStartDateFieldId = (endDateFieldId) => {
-  const pair = props.datePairs.find(p => p.end === endDateFieldId);
-  return pair ? pair.start : null;
-};
+const getTodayStartTs = () => {
+  const now = new Date()
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).getTime()
+}
+
+const disableAfterToday = (ts) => {
+  return ts > getTodayStartTs()
+}
+//#endregion
+
+//#region 初始化表单数据
+const toTs = (val) => {
+  if (val === null || val === undefined || val === '') return null
+  if (typeof val === 'number') return val
+  if (typeof val === 'string') {
+    // 兼容 "yyyy-MM-dd"（避免时区偏移）
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return new Date(val + 'T00:00:00').getTime()
+    const t = Date.parse(val)
+    return Number.isNaN(t) ? null : t
+  }
+  return null
+}
 
 const initializeFormData = () => {
+  Object.keys(rules).forEach(k => delete rules[k])
+
   props.fields.forEach((field) => {
-    const initialValue = props.initialData[field.id];
-    validationState[field.id] = true;
-    if (field.type === 'multiselect' && Array.isArray(initialValue)) {
-      nextTick(() => {
-        formData[field.id] = initialValue
-          .map(id => field.options.find(option => option.value === id))
-          .filter(Boolean);
-      });
-    } else if (field.type === 'select') {
-      nextTick(() => {
-        formData[field.id] = field.options.find(option =>
-          typeof initialValue === 'object' ? option.value === initialValue.value : option.value === initialValue
-        ) || field.default || '';
-      });
-    } else {
-      formData[field.id] = initialValue || field.default || (field.type === 'multiselect' ? [] : '');
+    const key = getFieldKey(field)
+
+    // ✅ daterange：把 start/end（string/number）转成 [ts, ts]
+    if (Array.isArray(field.id) && field.type === 'daterange') {
+      const [startKey, endKey] = field.id
+      const startRaw = props.initialData[startKey] ?? props.defaultData[startKey]
+      const endRaw = props.initialData[endKey] ?? props.defaultData[endKey]
+      const start = toTs(startRaw)
+      const end = toTs(endRaw)
+      formData[key] = start || end ? [start, end] : null
     }
-  });
-};
-
-const validateField = (field) => {
-  if (field.isRequired && !formData[field.id]) {
-    validationState[field.id] = false;
-    if (!messageShown) {
-      handleMessage(t,`${t(field.label)} ${t('is_required')}`, 'error');
-      messageShown = true;
+    // ✅ date：把 string 转成 ts
+    else if (field.type === 'date') {
+      const raw =
+        props.initialData[field.id] ??
+        props.defaultData[field.id] ??
+        field.default ??
+        null
+      formData[key] = toTs(raw)
     }
-  } else {
-    validationState[field.id] = true;
-  }
+    // 其他照旧
+    else {
+      formData[key] =
+        props.initialData[field.id] ??
+        props.defaultData[field.id] ??
+        field.default ??
+        (field.type === 'multiselect' ? [] : null)
+    }
 
-  // 验证所有日期配对
-  validateDatePairs();
-};
+    if (field.isRequired) {
+      rules[key] = {
+        trigger: ['blur', 'change'],
+        validator: (_rule, value) => {
+          // daterange: 必须数组，且两端都有值
+          if (field.type === 'daterange') {
+            const ok = Array.isArray(value) && value.length === 2 && !!value[0] && !!value[1]
+            return ok ? true : new Error(`${t(field.label)} ${t('is_required')}`)
+          }
 
-// 验证所有日期配对
-const validateDatePairs = () => {
-  props.datePairs.forEach(pair => {
-    const startDateField = props.fields.find(f => f.id === pair.start);
-    const endDateField = props.fields.find(f => f.id === pair.end);
+          // date: 必须是 timestamp number
+          if (field.type === 'date') {
+            const ok = typeof value === 'number' && !Number.isNaN(value)
+            return ok ? true : new Error(`${t(field.label)} ${t('is_required')}`)
+          }
 
-    if (startDateField && endDateField) {
-      const startDate = formData[startDateField.id];
-      const endDate = formData[endDateField.id];
-      
-      if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-        validationState[endDateField.id] = false;
-      } else if (endDate && validationState[endDateField.id] !== false) {
-        // 只有在没有其他验证错误时才设置为 true
-        validationState[endDateField.id] = true;
+          // multiselect: 必须选到至少一个
+          if (field.type === 'multiselect') {
+            const ok = Array.isArray(value) && value.length > 0
+            return ok ? true : new Error(`${t(field.label)} ${t('is_required')}`)
+          }
+
+          // 其他：非空
+          const ok = value !== null && value !== undefined && value !== ''
+          return ok ? true : new Error(`${t(field.label)} ${t('is_required')}`)
+        }
       }
     }
-  });
-};
+  })
+}
 
-const validateForm = () => {
-  messageShown = false;
-  let isValid = true;
+onMounted(() => initializeFormData())
+watch(() => JSON.stringify(props.initialData), () => initializeFormData())
+//#endregion
 
-  for (const field of props.fields) {
-    validateField(field);
-    if (!validationState[field.id]) {
-      isValid = false;
-      break; 
-    }
-  }
+//#region 提交
+const onSubmit = async () => {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) return
 
-  return isValid;
-};
-
-const instantReflectHandler = (data) => {
-  const submissionData = {};
+  const submissionData = {}
   props.fields.forEach((field) => {
-    if (field.type === 'multiselect' && Array.isArray(formData[field.id])) {
-      submissionData[field.id] = formData[field.id].map(item => item.value);
-      field.default = formData[field.id].map(item => item.value);
+    const key = getFieldKey(field)
+    const value = formData[key]
+    if (Array.isArray(field.id) && field.type === 'daterange') {
+      const [startKey, endKey] = field.id
+      submissionData[startKey] = formatDate(value?.[0]) || null
+      submissionData[endKey] = formatDate(value?.[1]) || null
+    } else if (field.type === 'date') {
+      submissionData[field.id] = value ? formatDate(value) : null
+      return
     } else {
-      submissionData[field.id] = formData[field.id];
+      submissionData[field.id] = value
     }
-  });
-  submissionData[data.id] = formData[data.id];
-  emit('update', submissionData);
-};
+  })
+  emit('submit', submissionData)
+}
+//#endregion
 
-props.fields.forEach((field) => {
-  if (field.type === 'multiselect' || field.type === 'select') {
-    watch(
-      () => field.options,
-      () => {
-        initializeFormData();
-      },
-      { immediate: true, deep: true }
-    );
-  }
-});
-
-initializeFormData();
-
-watch(
-  () => props.initialData,
-  () => {
-    initializeFormData();
-  },
-  { deep: true }
-);
-
-const onSubmit = () => {
-
-  if (validateForm()) {
-    const submissionData = {};
-
-    props.fields.forEach((field) => {
-      if (field.type === 'multiselect' && Array.isArray(formData[field.id])) {
-        submissionData[field.id] = formData[field.id].map(item => item.value);
-        field.default = formData[field.id].map(item => item.value);
-      } else if (field.type === 'select') {
-        submissionData[field.id] = formData[field.id] && typeof formData[field.id] === 'object'
-          ? formData[field.id].value
-          : formData[field.id];
-      } else {
-        submissionData[field.id] = formData[field.id];
-      }
-    });
-
-    emit('submit', submissionData);
-
-    initializeFormData();
-  }
-
-};
-
-watch(
-  () => props.isAutoCollapse,
-  () => {
-    if (props.isAutoCollapse) {
-      const accordion = document.getElementById('formAccordionCollapse');
-      if (accordion) {
-        const collapseInstance = new Collapse(accordion, { toggle: true });
-        collapseInstance.hide();
-      }
-    }
-  },
-  { deep: true }
-);
-
-const onAdd = () => {
-  emit('add');
-};
-
+//#region Reset / Add
 const onReset = () => {
-  
-  emit('reset');
-  props.fields.forEach((field) => {
-    const defaultValue = props.defaultData && props.defaultData[field.id] !== undefined
-      ? props.defaultData[field.id]
-      : null;
+  initializeFormData()
+  emit('reset')
+}
+const onAdd = () => emit('add')
+//#endregion
 
-    if (field.type === 'multiselect' && Array.isArray(defaultValue)) {
-      formData[field.id] = defaultValue
-        .map(id => field.options.find(option => option.value === id))
-        .filter(Boolean);
-    } else {
-      formData[field.id] = defaultValue || (field.type === 'multiselect' ? [] : '');
-    }
-    validationState[field.id] = true;
-  });
-};
+//#region ✅ 动态远程搜索逻辑（只在 field.isDynamic = true 时启用）
+const remoteSearchHandlers = new Map()
+
+const handleRemoteSearch = (field, query) => {
+  if (!field.remoteMethod) return
+
+  if (!remoteSearchHandlers.has(field.id)) {
+    // 为每个 field 创建独立的 debounce 函数
+    const debouncedFn = useDebounceFn(async (val) => {
+      try {
+        field.loading = true
+        await field.remoteMethod(val)
+      } finally {
+        field.loading = false
+      }
+    }, field.debounceDelay || 300) // ✅ 支持自定义 debounce 时间
+
+    remoteSearchHandlers.set(field.id, debouncedFn)
+  }
+
+  remoteSearchHandlers.get(field.id)(query)
+}
+//#endregion
 </script>
 
-<style>
-.multiselect__input,
-.multiselect__single {
-  color: var(--default-text-color);
+<style scoped>
+.n-date-picker {
+  width: 100%;
 }
 </style>

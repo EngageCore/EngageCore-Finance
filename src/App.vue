@@ -1,6 +1,64 @@
+<script setup>
+import { computed } from 'vue';
+import { NConfigProvider, darkTheme } from 'naive-ui';
+import { useAppStore } from '@/store/useAppStore';
+import { useThemeStore } from '@/store/useThemeStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { naiveDateLocales, naiveLocales } from './locales/naive';
+
+defineOptions({
+  name: 'App'
+});
+
+const appStore = useAppStore();
+const themeStore = useThemeStore();
+const authStore = useAuthStore();
+
+const naiveDarkTheme = computed(() => (themeStore.darkMode ? darkTheme : undefined));
+
+const naiveLocale = computed(() => {
+  return naiveLocales[appStore.locale];
+});
+
+const naiveDateLocale = computed(() => {
+  return naiveDateLocales[appStore.locale];
+});
+
+const watermarkProps = computed(() => {
+  const content =
+    themeStore.watermark.enableUserName && authStore.userInfo.userName
+      ? authStore.userInfo.userName
+      : themeStore.watermark.text;
+
+  return {
+    content,
+    cross: true,
+    fullscreen: true,
+    fontSize: 16,
+    lineHeight: 16,
+    width: 384,
+    height: 384,
+    xOffset: 12,
+    yOffset: 60,
+    rotate: -15,
+    zIndex: 9999
+  };
+});
+</script>
+
 <template>
-  <router-view />
+  <NConfigProvider
+    :theme="naiveDarkTheme"
+    :theme-overrides="themeStore.naiveTheme"
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
+    class="h-full"
+  >
+    <AppProvider>
+      <RouterView class="bg-layout" />
+      <NWatermark v-if="themeStore.watermark.visible" v-bind="watermarkProps" />
+    </AppProvider>
+  </NConfigProvider>
 </template>
 
-<script setup>
-</script>
+<style scoped></style>

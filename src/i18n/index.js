@@ -1,13 +1,13 @@
 import { createI18n } from "vue-i18n";
+import translations from "@/locales/localTranslations.json";
 
-// Retrieve the saved language from local storage or use default
-const savedLocale = localStorage.getItem("language") || "en_US";
+const savedLocale = localStorage.getItem("language") || "en";
 
 const i18n = createI18n({
   legacy: false,
   locale: savedLocale,
-  fallbackLocale: "en_US",
-  messages: {},
+  fallbackLocale: "en",
+  messages: translations,
 });
 
 export default i18n;

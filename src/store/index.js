@@ -1,33 +1,23 @@
-import { createStore } from "vuex";
+// Type import removed for JavaScript conversion
+import { createPinia } from 'pinia';
+import { jsonClone } from '@sa/utils';
+import { SetupStoreId } from '@/enum';
 
-const store = createStore({
-  state: {
-    globalVariables: {},
-  },
-  mutations: {
-    setGlobalVariable(state, { key, value }) {
-      state.globalVariables[key] = value;
-    },
-    removeGlobalVariable(state, key) {
-      delete state.globalVariables[key];
-    },
-  },
-  actions: {
-    updateGlobalVariable({ commit }, { key, value }) {
-      commit("setGlobalVariable", { key, value });
-    },
-    deleteGlobalVariable({ commit }, key) {
-      commit("removeGlobalVariable", key);
-    },
-  },
-  getters: {
-    getGlobalVariable: (state) => (key) => {
-      return state.globalVariables[key];
-    },
-    getAllGlobalVariables: (state) => {
-      return state.globalVariables;
-    },
-  },
-});
+function resetSetupStore(context) {
+  const setupSyntaxIds = Object.values(SetupStoreId);
+  if (setupSyntaxIds.includes(context.store.$id)) {
+    const { $state } = context.store;
+    const defaultStore = jsonClone($state);
+    context.store.$reset = () => {
+      context.store.$patch(defaultStore);
+    };
+  }
+}
 
-export default store;
+/** Setup Vue store plugin pinia */
+export function setupStore(app) {
+  const store = createPinia();
+  store.use(resetSetupStore);
+
+  app.use(store);
+}

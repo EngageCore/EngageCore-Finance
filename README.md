@@ -1,5 +1,20 @@
-# Vue 3 + Vite
+# Frontend Workspace Notes
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Hooks Path Update (Flattening)
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+- The `hooks` directory has been flattened. All hooks previously under `@/hooks/common/*` or `@/hooks/business/*` are now imported directly from `@/hooks/*`.
+- Update imports accordingly:
+  - `@/hooks/common/router` → `@/hooks/router`
+  - `@/hooks/common/icon` → `@/hooks/icon`
+  - `@/hooks/common/echarts` → `@/hooks/echarts`
+  - `@/hooks/common/form` → `@/hooks/form`
+  - `@/hooks/common/table` → `@/hooks/table`
+  - `@/hooks/business/auth` → `@/hooks/auth`
+  - `@/hooks/business/captcha` → `@/hooks/captcha`
+  - `@/hooks/useCallApi` remains `@/hooks/useCallApi`
+
+## Notes
+
+- The flattening keeps all functional logic and export methods unchanged.
+- Empty subfolders `hooks/common` and `hooks/business` have been removed.
+- If you maintain external docs or READMEs, replace all `@/hooks/common/` and `@/hooks/business/` paths with the flattened form shown above.

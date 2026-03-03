@@ -1,533 +1,234 @@
 <template>
-  <!-- Start:: row-7 -->
-  <div class="row">
-    <div class="col-12">
-      <div class="card custom-card">
-        <div class="card-header justify-content-between">
-          <div class="card-title">
-            {{ $t(title) }}
-          </div>
-          <!-- <button @click="exportToExcel" class="btn btn-primary">Export to Excel</button> -->
-          <slot name="tableRight"></slot>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive"  ref="tableContainer">
-            <table class="table text-nowrap" :class="{ 'table-bordered': bordered }">
-              <thead>
-                <tr>
-                  <th v-for="(header, index) in headers" :key="index" @click="header.sortable ? sort(header.key) : null" class="table-header"
-                    :class="{ 'text-right': header.type && header.type == 'currency' }" :style="header.width ? { minWidth: header.width } : {}">
-                    <template v-if="$slots[`header-${header.key}`]">
-                      <slot :name="`header-${header.key}`" :header="header" />
-                    </template>
-                    <template v-else>
-                      {{ $t(header.label) }}
-                      <i v-if="header.sortable" class="ri-sort-asc" :class="{ 'ri-sort-desc': sortOrder === 'desc' }"></i>
-                    </template>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="loading">
-                  <td :colspan="headers.length" class="text-center">
-                    <div class="spinner-border spinner-border-sm" role="status">
-                      <span class="visually-hidden">{{ $t('loading') || 'Loading...' }}</span>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-else-if="!data.length">
-                  <td :colspan="headers.length" class="text-center">{{ $t('no_records_found') }}</td>
-                </tr>
-                <tr 
-                  v-else 
-                  v-for="(row, rowIndex) in data" 
-                  :key="rowIndex"
-                  @click="handleRowClick(row)"
-                  :class="getRowClass()"
-                  class="table-row"
-                >
-                  <td v-for="(header, colIndex) in headers" :key="colIndex"
-                    :class="{ 'text-right': header.type && header.type == 'currency' }">
-                    <slot :name="header.key" :row="row" :index="rowIndex" :teleportDropdown="teleportDropdown" v-if="header.type && header.type == 'currency'">
-                      {{ formatAmount(row[header.key]) }}
-                    </slot>
-                    <slot :name="header.key" :row="row" :index="rowIndex" :teleportDropdown="teleportDropdown" v-else>
-                      {{ row[header.key] }}
-                    </slot>
-                  </td>
-                </tr>
+  <div class="p-4 h-auto" :class="{ 'px-0': removePadding }">
+    <div class="max-w-full mx-auto">
+      <!-- When showCard is true (default), wrap table in Naive Card -->
+      <n-card
+        v-if="showCard"
+        size="small"
+        class="shadow-sm rounded-lg overflow-auto"
+        bordered
+      >
+        <!-- ✅ Header: 左边 title -->
+        <template #header>
+          <span v-if="title">{{ $t(title) }}</span>
+        </template>
 
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination-container mt-3 card-footer d-flex justify-content-between align-items-center"
-            v-if="data.length && pagination">
-            <div>
-              {{ $t('pagination_msg', {val1 : offset + 1, val2 : Math.min(offset + limit, totalRows), val3 :totalRows }) }}
+        <!-- ✅ Header Right: 右边内容 -->
+        <template #header-extra>
+          <slot name="header-right"></slot>
+        </template>
+
+        <!-- Description -->
+        <template v-if="description">
+          <n-text depth="3" class="text-sm mb-4 block -mt-2">
+            {{ $t(description) }}
+          </n-text>
+        </template>
+
+        <div class="table-wrapper">
+          <n-data-table
+            :columns="computedColumns"
+            :data="paginatedData"
+            :bordered="bordered"
+            :striped="striped"
+            :loading="loading"
+            :single-line="false"
+            :size="size"
+            class="expandable-table"
+            :style="{ minWidth: tableMinWidth, width: '100%' }"
+          />
+        </div>
+
+        <div v-if="paginationEnabled" class="flex justify-end mt-4">
+          <n-pagination
+            v-model:page="pagination.page"
+            :page-size="pagination.pageSize"
+            :page-count="pageCount"
+            show-size-picker
+            :page-sizes="[5, 10, 20, 50]"
+            @update:page="handlePageChange"
+            @update:page-size="handlePageSizeChange"
+          />
+        </div>
+
+        <div class="mt-4">
+          <slot name="footer"></slot>
+        </div>
+      </n-card>
+
+      <!-- When showCard is false, render only the bare table + pagination + footer -->
+      <div v-else>
+        <div v-if="title || description || $slots['header-right']" class="mb-2 flex items-center justify-between">
+          <div>
+            <div v-if="title" class="font-semibold text-sm">
+              {{ $t(title) }}
             </div>
-            <div class="pagination">
-              <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1"
-                class="pagination-button">{{ $t('previous') }}</button>
-              <template v-if="totalPages > 5">
-                <button v-if="currentPage > 3" @click="changePage(1)" class="pagination-page btn">{{ 1 }}</button>
-                <span v-if="currentPage > 4">...</span>
-                <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
-                  :class="['pagination-page btn', { active: page === currentPage }]">{{ page }}</button>
-                <span v-if="currentPage < totalPages - 3">...</span>
-                <button v-if="currentPage < totalPages - 2" @click="changePage(totalPages)"
-                  class="pagination-page btn">{{ totalPages }}</button>
-              </template>
-              <template v-else>
-                <button v-for="page in totalPages" :key="page" @click="changePage(page)"
-                  :class="['pagination-page btn', { active: page === currentPage }]">{{ page }}</button>
-              </template>
-              <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages"
-                class="pagination-button">{{ $t('next') }}</button>
+            <div v-if="description" class="text-xs text-gray-500">
+              {{ $t(description) }}
             </div>
           </div>
+          <div>
+            <slot name="header-right"></slot>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <n-data-table
+            :columns="computedColumns"
+            :data="paginatedData"
+            :bordered="bordered"
+            :striped="striped"
+            :loading="loading"
+            :single-line="false"
+            :size="size"
+            class="expandable-table"
+            :style="{ minWidth: tableMinWidth, width: '100%' }"
+          />
+        </div>
+
+        <div v-if="paginationEnabled" class="flex justify-end mt-4">
+          <n-pagination
+            v-model:page="pagination.page"
+            :page-size="pagination.pageSize"
+            :page-count="pageCount"
+            show-size-picker
+            :page-sizes="[5, 10, 20, 50]"
+            @update:page="handlePageChange"
+            @update:page-size="handlePageSizeChange"
+          />
+        </div>
+
+        <div class="mt-4">
+          <slot name="footer"></slot>
         </div>
       </div>
     </div>
   </div>
-  
-  <!-- Teleported Dropdowns -->
-   <Teleport to="body">
-     <div v-for="[dropdownId, dropdown] in activeDropdowns" :key="dropdownId" 
-          v-show="dropdown.visible" 
-          class="teleported-dropdown"
-          :style="dropdown.position"
-          :data-dropdown-id="dropdownId">
-       <div class="dropdown-menu" style="display: block;">
-         <slot :name="`dropdown-content`" :dropdownId="dropdownId" :rowData="dropdown.rowData" :hide="() => hideDropdown(dropdownId)"></slot>
-       </div>
-     </div>
-   </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import * as XLSX from 'xlsx';
-import { formatAmount } from '@/utils/common';
-import { useI18n } from "vue-i18n";
-const { t, locale } = useI18n();
+import { ref, computed, watch, useSlots } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { NCard, NText, NDataTable, NPagination } from 'naive-ui'
+
+const { t } = useI18n()
+const slots = useSlots()
 
 const props = defineProps({
-  title: {
-    type: String,
-    required: false,
-    default:''
-  },
-  data: {
-    type: Array,
-    required: true,
-  },
-  headers: {
-    type: Array,
-    required: true,
-  },
-  bordered: {
-    type: Boolean,
-    default: false,
-  },
-  offset: {
-    type: Number,
-    default: 0,
-  },
-  limit: {
-    type: Number,
-    default: 10,
-  },
-  totalRows: {
-    type: Number,
-    required: true,
-  },
-  pagination: {
-    type: Boolean,
-    default: true
-  },
-  sortOrder: {
-    type: String,
-    default: 'asc'
-  },
-  // 新增行点击相关属性
-  rowClickable: {
-    type: Boolean,
-    default: false
-  },
-  loading: {
-    type: Boolean,
-    default: false
+  title: { type: String, default: '' },
+  description: { type: String, default: '' },
+  headers: { type: Array, required: true },
+  data: { type: Array, required: true },
+  bordered: { type: Boolean, default: true },
+  striped: { type: Boolean, default: true },
+  loading: { type: Boolean, default: false },
+  size: { type: String, default: 'medium' },
+  offset: { type: Number, default: 0 },
+  limit: { type: Number, default: 10 },
+  totalRows: { type: Number, default: 0 },
+  pagination: { type: Boolean, default: true },
+  removePadding: { type: Boolean, default: false },
+  /** When false, renders only the bare table (no outer card box) */
+  showCard: { type: Boolean, default: true }
+})
+
+const emit = defineEmits(['sort', 'pagination'])
+
+//#region Pagination
+const pagination = ref({
+  page: Math.floor(props.offset / props.limit) + 1,
+  pageSize: props.limit
+})
+
+watch(
+  () => props.offset,
+  (newOffset) => {
+    pagination.value.page = Math.floor(newOffset / props.limit) + 1
   }
-});
+)
 
-const emit = defineEmits(['sort', 'pagination', 'rowAction']);
+const pageCount = computed(() =>
+  Math.ceil(props.totalRows / pagination.value.pageSize)
+)
 
-const tableContainer = ref(null);
-const activeDropdowns = ref(new Map());
+const handlePageChange = (page) => {
+  emit('pagination', {
+    offset: (page - 1) * pagination.value.pageSize,
+    limit: pagination.value.pageSize
+  })
+}
 
-const sortOrder = ref(props.sortOrder);
-const currentPage = ref(1);
+const handlePageSizeChange = (pageSize) => {
+  pagination.value.pageSize = pageSize
+  emit('pagination', { offset: 0, limit: pageSize })
+}
 
-const totalPages = computed(() => Math.ceil(props.totalRows / props.limit));
+const paginationEnabled = computed(
+  () => props.pagination && props.totalRows > 0
+)
 
-const visiblePages = computed(() => {
-  const pages = [];
-  const startPage = Math.max(1, currentPage.value - 2);
-  const endPage = Math.min(totalPages.value, currentPage.value + 2);
+const paginatedData = computed(() => {
+  // 如果 totalRows 有传，代表数据来自后端分页，直接用 data
+  if (props.totalRows) return props.data
+  // 否则前端分页
+  const start = (pagination.value.page - 1) * pagination.value.pageSize
+  return props.data.slice(start, start + pagination.value.pageSize)
+})
+//#endregion
 
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
-
-  return pages;
-});
-
-const hasFewRows = computed(() => {
-  return props.data.length <= 2;
-});
-
-// 行点击处理函数
-const handleRowClick = (row) => {
-  if (!props.rowClickable) return;
-  
-  // 发出行点击事件给父组件，只传递row数据
-  emit('rowAction', row);
-};
-
-// 获取行的CSS类
-const getRowClass = () => {
-  const classes = [];
-  
-  if (props.rowClickable) {
-    classes.push('row-clickable');
-  }
-  
-  return classes;
-};
-
-// 监听props变化（如果需要的话）
-// watch(() => props.data, () => {
-//   // 可以在这里添加数据变化的处理逻辑
-// });
-
-const sort = (key) => {
-  sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
-  emit('sort', { key, order: sortOrder.value });
-};
-
-const changePage = (page) => {
-  if (page < 1 || page > totalPages.value) return;
-  currentPage.value = page;
-  emit('pagination', { offset: (page - 1) * props.limit, limit: props.limit });
-};
-
-watch(() => props.offset, (newOffset) => {
-  if (newOffset === 0) {
-    currentPage.value = 1;
-  }
-});
-
-const exportToExcel = () => {
-  const ws = XLSX.utils.json_to_sheet(props.data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-  XLSX.writeFile(wb, `${props.title}.xlsx`);
-};
-
-// Teleport dropdown functionality
- const teleportDropdown = (triggerElement, dropdownId, rowData = null) => {
-   return {
-     show: (event) => showDropdown(event, triggerElement, dropdownId, rowData),
-     hide: () => hideDropdown(dropdownId),
-     toggle: (event) => toggleDropdown(event, triggerElement, dropdownId, rowData)
-   };
- };
-
-const calculateDropdownPosition = (triggerRect, dropdownId = null) => {
-  let dropdownHeight = 200; // Default estimated dropdown height
-  
-  // Try to get actual dropdown height if dropdownId is provided
-  if (dropdownId) {
-    const dropdownElement = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
-    if (dropdownElement) {
-      // If dropdown is hidden, temporarily show it off-screen to measure
-      const wasHidden = dropdownElement.style.display === 'none' || !dropdownElement.offsetParent;
-      if (wasHidden) {
-        const originalStyles = {
-          position: dropdownElement.style.position,
-          visibility: dropdownElement.style.visibility,
-          left: dropdownElement.style.left,
-          top: dropdownElement.style.top
-        };
-        
-        // Temporarily position off-screen to measure
-        dropdownElement.style.position = 'absolute';
-        dropdownElement.style.visibility = 'hidden';
-        dropdownElement.style.left = '-9999px';
-        dropdownElement.style.top = '-9999px';
-        dropdownElement.style.display = 'block';
-        
-        dropdownHeight = dropdownElement.offsetHeight;
-        
-        // Restore original styles
-        dropdownElement.style.position = originalStyles.position;
-        dropdownElement.style.visibility = originalStyles.visibility;
-        dropdownElement.style.left = originalStyles.left;
-        dropdownElement.style.top = originalStyles.top;
-        if (wasHidden) {
-          dropdownElement.style.display = 'none';
+//#region Columns
+const computedColumns = computed(() =>
+  props.headers.map((header) => ({
+    title: () => t(header.label),
+    key: header.key,
+    align: header.align || 'center',
+    width: header.width || undefined,
+    sorter: header.sortable
+      ? (a, b) => {
+          if (a[header.key] < b[header.key]) return -1
+          if (a[header.key] > b[header.key]) return 1
+          return 0
         }
-      } else {
-        dropdownHeight = dropdownElement.offsetHeight;
+      : false,
+    render: (row, index) => {
+      const slotName = header.key
+      if (slots[slotName]) {
+        return slots[slotName]({ row, index })
       }
+      return row[header.key]
     }
-  }
-  
-  const viewportHeight = window.innerHeight;
-  const spaceBelow = viewportHeight - triggerRect.bottom;
-  const spaceAbove = triggerRect.top;
-  
-  let top = triggerRect.bottom + window.scrollY;
-  let transformOrigin = 'top';
-  
-  // If not enough space below and more space above, show dropdown above
-  if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
-    top = triggerRect.top + window.scrollY - dropdownHeight;
-    transformOrigin = 'bottom';
-  }
-  
-  return {
-    position: 'absolute',
-    top: `${top}px`,
-    left: `${triggerRect.left + window.scrollX}px`,
-    zIndex: 1050,
-    transformOrigin
-  };
-};
+  }))
+)
+//#endregion
 
-const showDropdown = async (event, triggerElement, dropdownId, rowData = null) => {
-   event.preventDefault();
-   event.stopPropagation();
-   
-   // Hide other dropdowns
-   activeDropdowns.value.forEach((dropdown, id) => {
-     if (id !== dropdownId) {
-       hideDropdown(id);
-     }
-   });
-   
-   const triggerRect = triggerElement.getBoundingClientRect();
-   const position = calculateDropdownPosition(triggerRect, dropdownId);
-   
-   activeDropdowns.value.set(dropdownId, {
-     visible: true,
-     position,
-     triggerElement,
-     rowData
-   });
-   
-   await nextTick();
-   
-   // Add click outside listener
-   document.addEventListener('click', (e) => handleClickOutside(e, dropdownId), { once: true });
- };
-
-const hideDropdown = (dropdownId) => {
-  if (activeDropdowns.value.has(dropdownId)) {
-    activeDropdowns.value.delete(dropdownId);
-  }
-};
-
-const toggleDropdown = (event, triggerElement, dropdownId, rowData = null) => {
-   if (activeDropdowns.value.has(dropdownId)) {
-     hideDropdown(dropdownId);
-   } else {
-     showDropdown(event, triggerElement, dropdownId, rowData);
-   }
- };
-
-const handleClickOutside = (event, dropdownId) => {
-  const dropdown = activeDropdowns.value.get(dropdownId);
-  if (dropdown && !dropdown.triggerElement.contains(event.target)) {
-    hideDropdown(dropdownId);
-  }
-};
-
-const updateDropdownPositions = () => {
-  activeDropdowns.value.forEach((dropdown, dropdownId) => {
-    if (dropdown.visible && dropdown.triggerElement) {
-      const triggerRect = dropdown.triggerElement.getBoundingClientRect();
-      const position = calculateDropdownPosition(triggerRect, dropdownId);
-      dropdown.position = position;
-    }
-  });
-};
-
-// Handle scroll and resize events
-const handleScrollResize = () => {
-  updateDropdownPositions();
-};
-
-onMounted(() => {
-  if (tableContainer.value) {
-    tableContainer.value.addEventListener('scroll', handleTableScroll, { passive: true });
-  }
-  window.addEventListener('scroll', handleScrollResize, true);
-  window.addEventListener('resize', handleScrollResize);
-});
-
-onUnmounted(() => {
-  if (tableContainer.value) {
-    tableContainer.value.removeEventListener('scroll', handleTableScroll);
-  }
-  window.removeEventListener('scroll', handleScrollResize, true);
-  window.removeEventListener('resize', handleScrollResize);
-  activeDropdowns.value.clear();
-});
-
-const handleTableScroll = (e) => {
-  // 如果水平滚动了，就关闭全部 dropdown
-  if (e.target.scrollLeft !== 0) {
-    activeDropdowns.value.clear();
-  }
-};
+//#region 动态最小宽度（每栏约100px，整体最小 500px）
+const tableMinWidth = computed(() => {
+  const baseWidth = 100
+  const min = props.headers.length * baseWidth
+  // For small column counts (e.g. 3 columns), this keeps width compact
+  // but avoids overly narrow tables on larger screens.
+  return `${Math.max(min, 500)}px`
+})
+//#endregion
 </script>
 
 <style scoped>
-.table-header {
-  cursor: pointer;
+.shadow-sm {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  background: var(--body-bg-rgb);
-  border: 1px solid var(--primary01);
-  border-radius: 10px;
-  padding: 5px 10px;
-  flex-wrap: wrap;
-  /* Allow pagination items to wrap */
-  justify-content: center;
-  /* Center the pagination on smaller screens */
-}
-
-.pagination-button {
-  border: none;
-  background: none;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out;
-}
-
-.pagination-button:disabled {
-  cursor: not-allowed;
-  color: #6c757d;
-}
-
-.pagination-page {
-  margin: 0 5px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: none;
-  background-color: var(--body-bg-rgb);
-  color: var(--default-text-color);
-  cursor: pointer;
-  transition: background 0.3s ease-in-out;
-}
-
-.pagination-page:hover {
-  background-color: var(--primary-color);
-}
-
-.pagination-page.active {
-  background-color: var(--primary-color);
-}
-
-.pagination-button:hover:not(:disabled) {
-  background: var(--body-bg-rgb);
-}
-
-.table-responsive {
-  position: relative;
-}
-
-.table-row.row-clickable {
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.table-row.row-clickable:hover {
-  background-color: var(--primary-color-10, rgba(13, 110, 253, 0.1));
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-
-  .pagination-button,
-  .pagination-page {
-    padding: 5px 8px;
-    /* Reduce padding on smaller screens */
-    margin: 3px;
-    /* Reduce margin for better spacing */
-  }
-
-  .pagination {
-    padding: 5px;
-    flex-wrap: nowrap;
-  }
-
-  .pagination-container {
-    flex-direction: column;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 576px) {
-
-  .pagination-button,
-  .pagination-page {
-    font-size: 12px;
-    /* Reduce font size for very small screens */
-    padding: 4px 6px;
-  }
-
-  .pagination {
-    padding: 4px;
-  }
-}
-
-.teleported-dropdown {
-  position: absolute;
-  z-index: 1050;
-}
-
-.teleported-dropdown .dropdown-menu {
-  position: static;
-  display: block;
-  float: none;
-  width: auto;
-  margin: 0;
-}
-
-.teleported-dropdown .dropdown-item {
-  display: block;
+/* ✅ 横向滚动支持 */
+.table-wrapper {
+  overflow-x: auto;
   width: 100%;
-  padding: 0.25rem 1rem;
-  clear: both;
-  font-weight: 400;
-  color: #212529;
-  text-align: inherit;
-  text-decoration: none;
-  white-space: nowrap;
-  background-color: transparent;
-  border: 0;
 }
 
-.teleported-dropdown .dropdown-item:hover,
-.teleported-dropdown .dropdown-item:focus {
-  color: #1e2125;
-  background-color: #e9ecef;
+/* ✅ 表格自动撑满或滚动 */
+.expandable-table {
+  table-layout: auto;
+}
+
+.n-data-table {
+  white-space: nowrap;
 }
 </style>

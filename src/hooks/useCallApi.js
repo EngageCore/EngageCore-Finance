@@ -1,18 +1,25 @@
 import axios from 'axios';
 import { ref, computed } from 'vue';
-import { useLoadingStore } from '@/store/loadingStore'; 
-import { useAuthStore } from '@/store/authStore'; 
+import { useLoading } from '@sa/hooks';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 
 export const useCallApi = () => {
-  const loadingStore = useLoadingStore();
+  const { loading, startLoading, endLoading } = useLoading();
+  const submitStore = useSubmitLoadingStore();
   const authStore = useAuthStore();
   const error = ref(null);
 
   const callApi = async (url, method = 'GET', data = null, params = null, isLoading = true) => {
-    if(isLoading){
+    const isSubmitMethod = ["POST", "PATCH", "PUT", "DELETE"].includes(method.toUpperCase());
+    const shouldShowSubmitLoading = isLoading && isSubmitMethod;
 
-      loadingStore.startLoading();
+    if (isLoading) {
+      startLoading();
     }
+    if (shouldShowSubmitLoading) {
+      submitStore.startSubmit()
+    };
     error.value = null;
 
     
@@ -23,46 +30,44 @@ export const useCallApi = () => {
 
       // Only set Content-Type for non-FormData requests
       // FormData needs the browser to set Content-Type automatically with boundary
-      if (!(data instanceof FormData) && data !== null) {
+      if (!(data instanceof FormData)) {
         headers['Content-Type'] = 'application/json';
       }
 
-      if (authStore.isAuthenticated) {
-        headers['Authorization'] = 'Bearer ' + localStorage.getItem("token");
+      // Attach user token when available
+      const token = authStore.token;
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
-      // Build request config - only include data if it's not null
-      const requestConfig = {
+      const response = await axios({
         url: `${import.meta.env.VITE_API_URL}${url}`,
         method,
+        data,
         params, // Pass the query parameters here
         headers,
-      };
+      });
 
-      // Only include data in request if it's not null
-      // This prevents sending "null" as a string in the body
-      if (data !== null) {
-        requestConfig.data = data;
-      }
-
-      const response = await axios(requestConfig);
-
-      return response?.data?.message?.data;
+      return response.data;
     } catch (err) {
-      if (url != '/auth/login' && err.response?.status === 401) {
+      if (url != '/login' && err.response?.status === 401) {
         authStore.logout();
+        return;
       }
       error.value = err.response ? err.response.data : err.message;
       throw err;
     } finally {
-      if(isLoading){
-        loadingStore.stopLoading();
+      if (isLoading) {
+        endLoading();
       }
+      if (shouldShowSubmitLoading) {
+        submitStore.endSubmit()
+      };
     }
   };
 
   return {
-    loading: computed(() => loadingStore.isLoading),
+    loading: computed(() => loading.value),
     error,
     callApi,
   };

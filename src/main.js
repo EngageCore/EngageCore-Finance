@@ -1,46 +1,40 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import store from "./store";
-import i18n from "./i18n";
-import { loadTranslationsFromLocal } from "./utils/loadTranslations";
-import { createPinia } from 'pinia';
-import * as common from "./utils/common";
-import { sessionManager } from './utils/sessionManager';
-import router from "./router";
-import tooltipDirective from '@/directives/tooltips'
+import { createApp } from 'vue';
+import Particles from '@tsparticles/vue3';
+import { loadSlim } from '@tsparticles/slim';
+import './plugins/assets';
+import { setupAppVersionNotification, setupDayjs, setupIconifyOffline, setupLoading, setupNProgress } from './plugins';
+import '@fortawesome/fontawesome-free/css/all.min.css'
+import { setupStore } from './store';
+import { setupRouter } from './router';
+import { setupI18n } from './locales';
+import App from './App.vue';
 
-import 'vue-multiselect/dist/vue-multiselect.css';
-import "./assets/libs/bootstrap/css/bootstrap.min.css";
-import "./assets/css/styles.min.css";
-import "./assets/css/icons.css";
-import 'bootstrap';
-import 'sweetalert2/dist/sweetalert2.min.css';
+async function setupApp() {
+  setupLoading();
 
-import "./assets/css/custom.css";
-import "./assets/css/awn.css";
+  setupNProgress();
 
-const app = createApp(App);
+  setupIconifyOffline();
 
-// Add common functions to global properties
-Object.keys(common).forEach((key) => {
-  app.config.globalProperties[`$${key}`] = common[key];
-});
+  setupDayjs();
 
-// Load translations from Google Sheets
-loadTranslationsFromLocal();
-// Check if theme is stored in localStorage and set the data-theme-mode attribute
-// const themeMode = localStorage.getItem('theme');
-// if (themeMode) {
-//   const htmlElement = document.documentElement;
-//   htmlElement.setAttribute('data-theme-mode', themeMode);
-// }
-const htmlElement = document.documentElement;
-htmlElement.setAttribute('data-theme-mode', 'glassy');
+  const app = createApp(App);
 
-const pinia = createPinia();
-app.use(pinia);
-app.use(router);
-app.use(store);
-app.use(i18n);
-app.directive('tooltip', tooltipDirective)
-app.mount("#app");
+  app.use(Particles, {
+    init: async engine => {
+      await loadSlim(engine);
+    }
+  });
+
+  setupStore(app);
+
+  await setupRouter(app);
+
+  setupI18n(app);
+
+  setupAppVersionNotification();
+
+  app.mount('#app');
+}
+
+setupApp();
