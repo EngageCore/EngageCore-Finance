@@ -33,6 +33,18 @@ export const customModuleRoutes = [
           order: 1,
           keepAlive: true
         }
+      },
+      {
+        name: 'management_user',
+        path: 'user',
+        view: () => import("@/views/management/user.vue"),
+        meta: {
+          title: 'user',
+          i18nKey: 'user',
+          icon: 'fa6-solid:user',
+          order: 2,
+          keepAlive: true
+        }
       }
     ]
   }

@@ -1,7 +1,7 @@
 <template>
   <DynamicSearchForm :fields="fields" :initialData="initialData" :showAddButton="true" @add="handleAdd" @submit="handleSearch" @reset="handleReset" />
 
-  <ReusableTable title="role" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
+  <ReusableTable title="user" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
     <template #action="{ row }">
       <div class="flex justify-center items-center gap-2">
         <n-tooltip trigger="hover">
@@ -14,14 +14,14 @@
               </template>
             </n-button>
           </template>
-          {{ $t('edit') }}
+          {{ $t("edit") }}
         </n-tooltip>
       </div>
     </template>
 
     <template #statusId="{ row }">
-      <n-tag :type="getRoleStatusTagTypeById(row.statusId)" size="small" round>
-        {{ t(getRoleStatusNameById(row.statusId)) }}
+      <n-tag :type="getUserTagTypeById(row.statusId)" size="small" round>
+        {{ t(getUserNameById(row.statusId)) }}
       </n-tag>
     </template>
 
@@ -30,13 +30,13 @@
     </template>
   </ReusableTable>
 
-  <RoleModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :formData="formData" :isEdit="isEdit" @save="handleSave" @close="closeModal" />
+  <UserModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :formData="formData" :isEdit="isEdit" @save="handleSave" @close="closeModal" />
 </template>
 
 <script setup>
 import ReusableTable from '@/components/ReusableTable.vue';
 import DynamicSearchForm from '@/components/DynamicSearchForm.vue';
-import RoleModal from '@/components/modal/RoleModal.vue';
+import UserModal from '@/components/modal/UserModal.vue';
 import { PencilOutline } from '@vicons/ionicons5';
 import { ref, reactive, onMounted } from 'vue';
 import { NButton, NIcon } from 'naive-ui';
@@ -44,7 +44,7 @@ import { useI18n } from "vue-i18n";
 import { useCallApi } from '@/hooks/useCallApi';
 import { useDropdown } from '@/composables/useDropdown';
 import { dateFormat, handleMessage } from '@/utils/common';
-import { getRoleStatusNameById, getRoleStatusTagTypeById } from '@/enum/roleStatus';
+import { getUserNameById, getUserTagTypeById } from '@/enum/userStatus';
 import { useApiError } from '@/composables/useApiError';
 import { useSubmitLoadingStore } from '@/store/useSubmitLoadingStore';
 
@@ -53,11 +53,11 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 
 //#region Form
-const { roleStatusOptions, getRoleStatusOptions } = useDropdown();
+const { userStatusOptions, getUserStatusOptions } = useDropdown();
 
 const fields = ref([
   { id: 'name', label: 'name', type: 'text', colClass: 'col-span-12 lg:col-span-3' },
-  { id: 'statusId', label: 'status', type: 'select', options: roleStatusOptions, colClass: 'col-span-12 lg:col-span-3' },
+  { id: 'statusId', label: 'status', type: 'select', options: userStatusOptions, colClass: 'col-span-12 lg:col-span-3' },
 ])
 
 const initialData = reactive({ startAt: null, endAt: null, statusId: 0 });
@@ -65,7 +65,7 @@ const initialData = reactive({ startAt: null, endAt: null, statusId: 0 });
 const handleSearch = (formData) => {
   Object.assign(initialData, formData);
   offset.value = 0;
-  fetchRoleList();
+  fetchUserList();
 };
 
 const handleReset = () => {
@@ -73,11 +73,11 @@ const handleReset = () => {
     delete initialData[key];
   });
   Object.assign(initialData, { startAt: null, endAt: null, statusId: 0 });
-  fetchRoleList();
+  fetchUserList();
 }
 
 onMounted(() => {
-  getRoleStatusOptions(true);
+  getUserStatusOptions(true);
 });
 //#endregion
 
@@ -91,6 +91,7 @@ const totalRows = ref(3)
 const tableHeaders = ref([
   { label: 'action', key: 'action', sortable: false },
   { label: 'name', key: 'name', sortable: false },
+  { label: 'role', key: 'roleName', sortable: false },
   { label: 'status', key: 'statusId', sortable: false },
   { label: 'created_at', key: 'createdAt', sortable: false },
 ])
@@ -100,16 +101,16 @@ const tableData = ref([]);
 const handleSort = ({ key, order }) => {
   sortKey.value = key;
   sortOrder.value = order;
-  fetchRoleList();
+  fetchUserList();
 };
 
 const handlePaginate = ({ offset: newOffset, limit: newLimit }) => {
   offset.value = newOffset;
   limit.value = newLimit;
-  fetchRoleList();
+  fetchUserList();
 };
 
-const fetchRoleList = async () => {
+const fetchUserList = async () => {
   try {
     const params = {
       offset: offset.value,
@@ -124,9 +125,9 @@ const fetchRoleList = async () => {
       }
     });
     
-    const resp = await callApi('/role', 'GET', null, params);
+    const resp = await callApi('/user', 'GET', null, params);
     if (resp) {
-      tableData.value = resp.roleList;
+      tableData.value = resp.userList;
       totalRows.value = resp.count;
     }
   } catch (error) {
@@ -135,14 +136,14 @@ const fetchRoleList = async () => {
 };
 
 onMounted(() => {
-  fetchRoleList();
+  fetchUserList();
 });
 //#endregion
 
 //#region Modal
 const loadingStore = useSubmitLoadingStore();
 const isModalVisible = ref(false);
-const formTitle = ref('add_role');
+const formTitle = ref('add_user');
 const formData = reactive({});
 const isEdit = ref(false);
 
@@ -150,15 +151,15 @@ const resetFormData = () => {
   Object.keys(formData).forEach(key => delete formData[key]);
   Object.assign(formData, {
     name: '',
+    password: '',
+    confirmPassword: '',
+    roleId: null,
     statusId: 1,
-    accessPageIds: [],
-    accessActionIds: [],
-    accessFeatureIds: [],
   });
 }
 
 const handleAdd = () => {
-  formTitle.value = 'add_role';
+  formTitle.value = 'add_user';
   isEdit.value = false;
   resetFormData();
   isModalVisible.value = true;
@@ -166,12 +167,12 @@ const handleAdd = () => {
 
 const handleEdit = async (row) => {
   try {
-    const resp = await callApi(`/role/${row.id}`, 'GET', null);
+    const resp = await callApi(`/user/${row.id}`, 'GET', null);
     resetFormData();
     if (resp) {
       Object.assign(formData, resp);
     }
-    formTitle.value = 'edit_role';
+    formTitle.value = 'edit_user';
     isEdit.value = true;
     isModalVisible.value = true;
   } catch (error) {
@@ -188,13 +189,13 @@ const closeModal = () => {
 const handleSave = async (submitData) => {
   try {
     if(isEdit.value) {
-      await callApi(`/role/${submitData.id}`, 'PATCH', submitData, null);
+      await callApi(`/user/${submitData.id}`, 'PATCH', submitData, null);
     } else {
-      await callApi('/role', 'POST', submitData, null);
+      await callApi('/user', 'POST', submitData, null);
     }
-    handleMessage(t(isEdit.value ? 'role_updated' : 'role_created'), 'success');
+    handleMessage(t(isEdit.value ? 'user_updated' : 'user_created'), 'success');
     closeModal();
-    fetchRoleList();
+    fetchUserList();
   } catch (error) {
     handleApiError(error);
   } finally {

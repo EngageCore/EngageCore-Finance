@@ -39,6 +39,8 @@ const local = {
     reset: '重置',
     role_created: '角色创建成功',
     role_updated: '角色更新成功',
+    user_created: '用户创建成功',
+    user_updated: '用户更新成功',
     search: '搜索',
     switch: '切换',
     tip: '提示',
@@ -299,6 +301,10 @@ const local = {
   },
   datatable: {
     itemCount: '共 {total} 条'
+  },
+  validation: {
+    please_fill_in_all_required_fields: '请填写所有必填栏位',
+    password_and_confirm_password_do_not_match: '密码与确认密码不一致'
   }
 };
 

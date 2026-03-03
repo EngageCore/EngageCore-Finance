@@ -19,4 +19,5 @@ export const views = {
   login: () => import("@/views/_builtin/login/index.vue"),
   home: () => import("@/views/home/index.vue"),
   'management_role': () => import("@/views/management/role.vue"),
+  'management_user': () => import("@/views/management/user.vue"),
 };

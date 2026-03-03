@@ -39,6 +39,8 @@ const local = {
     reset: 'Reset',
     role_created: 'Role Created',
     role_updated: 'Role Updated',
+    user_created: 'User Created',
+    user_updated: 'User Updated',
     search: 'Search',
     switch: 'Switch',
     tip: 'Tip',
@@ -299,6 +301,10 @@ const local = {
   },
   datatable: {
     itemCount: 'Total {total} items'
+  },
+  validation: {
+    please_fill_in_all_required_fields: 'Please fill in all required fields',
+    password_and_confirm_password_do_not_match: 'Password and confirm password do not match'
   }
 };
 
