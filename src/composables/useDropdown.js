@@ -9,6 +9,7 @@ import { brandStatusEnum } from '@/enum/brandStatus';
 import { bankProviderStatusEnum } from '@/enum/bankProviderStatus';
 import { counterPartyTypeEnum } from '@/enum/counterPartyType';
 import { counterPartyStatusEnum } from '@/enum/counterPartyStatus';
+import { transactionTypeEnum } from '@/enum/transactionType';
 
 export function useDropdown() {
   const authStore = useAuthStore();
@@ -25,6 +26,10 @@ export function useDropdown() {
   const brandOptions = ref([]);
   const bankProviderOptions = ref([]);
   const counterPartyStatusOptions = ref([]);
+  const transactionTypeOptions = ref([]);
+  const bankOptions = ref([]);
+  const memberOptions = ref([]);
+  const counterPartyOptions = ref([]);
 
   const getRoleStatusOptions = async (includeAll = true) => {
     let options = Object.values(roleStatusEnum).map(item => ({
@@ -174,6 +179,75 @@ export function useDropdown() {
     counterPartyStatusOptions.value = options;
   }
 
+  const getTransactionTypeOptions = async (includeAll = true) => {
+    let items = Object.values(transactionTypeEnum).filter(item => item.id !== 9);
+
+    let options = items.map(item => ({
+      label: t(item.name),
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    transactionTypeOptions.value = options;
+  }
+
+  const getBankOptions = async (includeAll = true, params = {}) => {
+    const resp = await callApi('/bank', 'GET', params);
+    let options = (resp.bankList || []).map(item => ({
+      label: `${item.bankProviderName} - ${item.accountName} (${item.accountNumber})`,
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    bankOptions.value = options;
+  }
+
+  const getMemberOptions = async (includeAll = true) => {
+    const resp = await callApi('/member', 'GET');
+    let options = (resp.memberList || []).map(item => ({
+      label: item.name,
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    memberOptions.value = options;
+  }
+
+  const getCounterPartyOptions = async (includeAll = true) => {
+    const resp = await callApi('/counterParty', 'GET');
+    let options = (resp.counterPartyList || []).map(item => ({
+      label: item.name,
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    counterPartyOptions.value = options;
+  }
+
   return {
     roleStatusOptions,
     getRoleStatusOptions,
@@ -193,5 +267,13 @@ export function useDropdown() {
     getBankProviderOptions,
     counterPartyStatusOptions,
     getCounterPartyStatusOptions,
+    transactionTypeOptions,
+    getTransactionTypeOptions,
+    bankOptions,
+    getBankOptions,
+    memberOptions,
+    getMemberOptions,
+    counterPartyOptions,
+    getCounterPartyOptions,
   };
 }

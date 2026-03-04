@@ -2,28 +2,28 @@
 /* prettier-ignore */
 
 // =====================
-// Custom Module Routes
+// Custom Module Routes (grouped by type for sidebar)
 //
-// Add new feature modules here.
-// Each module follows the same pattern:
-// - Parent route with `layout: 'base'` and `children`
-// - Child routes with `view` pointing to the page component
+// - system: 系统设置 (role, user)
+// - master: 主数据 (brand, bankProvider, counterParty, member, bank)
+// - transaction: 交易 (transaction)
 // =====================
 
 export const customModuleRoutes = [
+  // 系统设置 - Role, User
   {
-    name: 'management',
-    path: '/management',
+    name: 'system',
+    path: '/system',
     layout: 'base',
     meta: {
-      title: 'management',
-      i18nKey: 'management',
+      title: 'system_settings',
+      i18nKey: 'system_settings',
       icon: 'fa6-solid:users-gear',
-      order: 6
+      order: 2
     },
     children: [
       {
-        name: 'management_role',
+        name: 'system_role',
         path: 'role',
         view: () => import("@/views/management/role.vue"),
         meta: {
@@ -35,7 +35,7 @@ export const customModuleRoutes = [
         }
       },
       {
-        name: 'management_user',
+        name: 'system_user',
         path: 'user',
         view: () => import("@/views/management/user.vue"),
         meta: {
@@ -45,64 +45,104 @@ export const customModuleRoutes = [
           order: 2,
           keepAlive: true
         }
-      },
+      }
+    ]
+  },
+  // 主数据 - Brand, BankProvider, CounterParty, Member, Bank
+  {
+    name: 'master',
+    path: '/master',
+    layout: 'base',
+    meta: {
+      title: 'master_data',
+      i18nKey: 'master_data',
+      icon: 'fa6-solid:database',
+      order: 3
+    },
+    children: [
       {
-        name: 'management_brand',
+        name: 'master_brand',
         path: 'brand',
         view: () => import("@/views/management/brand.vue"),
         meta: {
           title: 'brand',
           i18nKey: 'brand',
           icon: 'fa6-solid:tags',
-          order: 3,
+          order: 1,
           keepAlive: true
         }
       },
       {
-        name: 'management_bankProvider',
+        name: 'master_bankProvider',
         path: 'bank-provider',
         view: () => import("@/views/management/bankProvider.vue"),
         meta: {
           title: 'bankProvider',
           i18nKey: 'bankProvider',
           icon: 'fa6-solid:building-columns',
-          order: 4,
+          order: 2,
           keepAlive: true
         }
       },
       {
-        name: 'management_counterParty',
+        name: 'master_counterParty',
         path: 'counter-party',
         view: () => import("@/views/management/counterParty.vue"),
         meta: {
           title: 'counterParty',
           i18nKey: 'counterParty',
           icon: 'fa6-solid:handshake',
-          order: 5,
+          order: 3,
           keepAlive: true
         }
       },
       {
-        name: 'management_member',
+        name: 'master_member',
         path: 'member',
         view: () => import("@/views/management/member.vue"),
         meta: {
           title: 'member',
           i18nKey: 'member',
           icon: 'fa6-solid:users',
-          order: 6,
+          order: 4,
           keepAlive: true
         }
       },
       {
-        name: 'management_bank',
+        name: 'master_bank',
         path: 'bank',
         view: () => import("@/views/management/bank.vue"),
         meta: {
           title: 'bank',
           i18nKey: 'bank',
           icon: 'fa6-solid:wallet',
-          order: 7,
+          order: 5,
+          keepAlive: true
+        }
+      }
+    ]
+  },
+  // 交易 - Transaction
+  {
+    name: 'transaction',
+    path: '/transaction',
+    layout: 'base',
+    meta: {
+      title: 'transaction',
+      i18nKey: 'transaction',
+      icon: 'fa6-solid:money-bill-transfer',
+      order: 4
+    },
+    children: [
+      {
+        name: 'transaction_list',
+        path: 'list',
+        view: () => import("@/views/management/transaction.vue"),
+        meta: {
+          title: 'transaction_list',
+          i18nKey: 'transaction_list',
+          icon: 'fa6-solid:list',
+          order: 1,
           keepAlive: true
         }
       }

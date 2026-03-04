@@ -105,6 +105,7 @@ declare module 'vue' {
     TeleCheckinModal: typeof import('./src/components/modal/teleCheckinModal.vue')['default']
     ThemeSchemaSwitch: typeof import('./src/components/common/theme-schema-switch.vue')['default']
     TipTapEditor: typeof import('./src/components/TipTapEditor.vue')['default']
+    TransactionModal: typeof import('./src/components/modal/TransactionModal.vue')['default']
     UserModal: typeof import('./src/components/modal/UserModal.vue')['default']
     WaveBg: typeof import('./src/components/custom/wave-bg.vue')['default']
   }
