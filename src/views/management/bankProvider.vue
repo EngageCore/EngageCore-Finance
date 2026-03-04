@@ -56,7 +56,7 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 
 //#region FORM
-const { roleStatusOptions, getRoleStatusOptions } = useDropdown();
+const { bankProviderStatusOptions, getBankProviderStatusOptions } = useDropdown();
 
 const fields = ref([
   {
@@ -75,7 +75,7 @@ const fields = ref([
     id: "statusId",
     label: "status",
     type: "select",
-    options: roleStatusOptions,
+    options: bankProviderStatusOptions,
     colClass: "col-span-12 lg:col-span-3",
   },
 ]);

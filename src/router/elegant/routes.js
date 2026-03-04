@@ -69,6 +69,30 @@ export const customModuleRoutes = [
           order: 4,
           keepAlive: true
         }
+      },
+      {
+        name: 'management_counterParty',
+        path: 'counter-party',
+        view: () => import("@/views/management/counterParty.vue"),
+        meta: {
+          title: 'counterParty',
+          i18nKey: 'counterParty',
+          icon: 'fa6-solid:handshake',
+          order: 5,
+          keepAlive: true
+        }
+      },
+      {
+        name: 'management_member',
+        path: 'member',
+        view: () => import("@/views/management/member.vue"),
+        meta: {
+          title: 'member',
+          i18nKey: 'member',
+          icon: 'fa6-solid:users',
+          order: 6,
+          keepAlive: true
+        }
       }
     ]
   }

@@ -6,6 +6,9 @@ import { useI18n } from 'vue-i18n';
 import { roleStatusEnum } from '@/enum/roleStatus';
 import { userStatusEnum } from '@/enum/userStatus';
 import { brandStatusEnum } from '@/enum/brandStatus';
+import { bankProviderStatusEnum } from '@/enum/bankProviderStatus';
+import { counterPartyTypeEnum } from '@/enum/counterPartyType';
+import { counterPartyStatusEnum } from '@/enum/counterPartyStatus';
 
 export function useDropdown() {
   const authStore = useAuthStore();
@@ -17,6 +20,10 @@ export function useDropdown() {
   const roleOptions = ref([]);
   const userStatusOptions = ref([]);
   const brandStatusOptions = ref([]);
+  const bankProviderStatusOptions = ref([]);
+  const counterPartyTypeOptions = ref([]);
+  const brandOptions = ref([]);
+  const counterPartyStatusOptions = ref([]);
 
   const getRoleStatusOptions = async (includeAll = true) => {
     let options = Object.values(roleStatusEnum).map(item => ({
@@ -84,6 +91,71 @@ export function useDropdown() {
     brandStatusOptions.value = options;
   }
 
+  const getBankProviderStatusOptions = async (includeAll = true) => {
+    let options = Object.values(bankProviderStatusEnum).map(item => ({
+      label: t(item.name),
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    bankProviderStatusOptions.value = options;
+  }
+
+  const getCounterPartyTypeOptions = async (includeAll = true) => {
+    let options = Object.values(counterPartyTypeEnum).map(item => ({
+      label: t(item.name),
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    counterPartyTypeOptions.value = options;
+  }
+
+  const getBrandOptions = async (includeAll = true) => {
+    const resp = await callApi('/brand', 'GET');
+    let options = resp.brandList.map(item => ({
+      label: item.name,
+      value: item.id
+    }));
+    
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    brandOptions.value = options;
+  }
+
+  const getCounterPartyStatusOptions = async (includeAll = true) => {
+    let options = Object.values(counterPartyStatusEnum).map(item => ({
+      label: t(item.name),
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    counterPartyStatusOptions.value = options;
+  }
+
   return {
     roleStatusOptions,
     getRoleStatusOptions,
@@ -93,5 +165,13 @@ export function useDropdown() {
     getUserStatusOptions,
     brandStatusOptions,
     getBrandStatusOptions,
+    bankProviderStatusOptions,
+    getBankProviderStatusOptions,
+    counterPartyTypeOptions,
+    getCounterPartyTypeOptions,
+    brandOptions,
+    getBrandOptions,
+    counterPartyStatusOptions,
+    getCounterPartyStatusOptions,
   };
 }

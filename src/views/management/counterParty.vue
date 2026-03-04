@@ -1,7 +1,25 @@
 <template>
-  <DynamicSearchForm :fields="fields" :initialData="initialData" :showAddButton="true" @add="handleAdd" @submit="handleSearch" @reset="handleReset" />
+  <DynamicSearchForm
+    :fields="fields"
+    :initialData="initialData"
+    :showAddButton="true"
+    @add="handleAdd"
+    @submit="handleSearch"
+    @reset="handleReset"
+  />
 
-  <ReusableTable title="brand" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
+  <ReusableTable
+    title="counterParty"
+    :headers="tableHeaders"
+    :data="tableData"
+    :offset="offset"
+    :limit="limit"
+    :totalRows="totalRows"
+    bordered
+    striped
+    @sort="handleSort"
+    @pagination="handlePaginate"
+  >
     <template #action="{ row }">
       <div class="flex justify-center items-center gap-2">
         <n-tooltip trigger="hover">
@@ -21,40 +39,56 @@
               </template>
             </n-button>
           </template>
-          {{ $t('edit') }}
+          {{ $t("edit") }}
         </n-tooltip>
       </div>
     </template>
 
     <template #statusId="{ row }">
-      <n-tag :type="getBrandStatusTagTypeById(row.statusId)" size="small" round>
-        {{ t(getBrandStatusNameById(row.statusId)) }}
+      <n-tag :type="getCounterPartyStatusTagTypeById(row.statusId)" size="small" round>
+        {{ t(getCounterPartyStatusNameById(row.statusId)) }}
       </n-tag>
+    </template>
+
+    <template #typeId="{ row }">
+      {{ t(getCounterPartyTypeNameById(row.typeId)) }}
     </template>
 
     <template #createdAt="{ row }">
       {{ dateFormat(row.createdAt) }}
     </template>
+
+    <template #outstandingAmount="{ row }">
+      {{ formatAmount(row.outstandingAmount) }}
+    </template>
   </ReusableTable>
 
-  <BrandModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :formData="formData" :isEdit="isEdit" @save="handleSave" @close="closeModal" />
+  <CounterPartyModal
+    v-if="isModalVisible"
+    :isVisible="isModalVisible"
+    :formTitle="formTitle"
+    :formData="formData"
+    :isEdit="isEdit"
+    @save="handleSave"
+    @close="closeModal"
+  />
 </template>
 
 <script setup>
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
-import BrandModal from "@/components/modal/BrandModal.vue";
+import CounterPartyModal from "@/components/modal/CounterPartyModal.vue";
 import { PencilOutline } from "@vicons/ionicons5";
 import { ref, reactive, onMounted } from "vue";
 import { NButton, NIcon } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
-import { dateFormat, handleMessage } from "@/utils/common";
+import { dateFormat, handleMessage, formatAmount } from "@/utils/common";
 import {
-  getBrandStatusNameById,
-  getBrandStatusTagTypeById,
-} from "@/enum/brandStatus";
+  getCounterPartyTypeNameById,
+} from "@/enum/counterPartyType";
+import { getCounterPartyStatusNameById, getCounterPartyStatusTagTypeById } from "@/enum/counterPartyStatus";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 
@@ -63,7 +97,7 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 
 //#region FORM
-const { brandStatusOptions, getBrandStatusOptions } = useDropdown();
+const { counterPartyTypeOptions, getCounterPartyTypeOptions } = useDropdown();
 
 const fields = ref([
   {
@@ -79,32 +113,52 @@ const fields = ref([
     colClass: "col-span-12 lg:col-span-3",
   },
   {
+    id: "typeId",
+    label: "type",
+    type: "select",
+    options: [
+      { label: t("partner"), value: 1 },
+      { label: t("bank_agent"), value: 2 },
+    ],
+    colClass: "col-span-12 lg:col-span-3",
+  },
+  {
     id: "statusId",
     label: "status",
     type: "select",
-    options: brandStatusOptions,
+    options: counterPartyTypeOptions,
     colClass: "col-span-12 lg:col-span-3",
   },
 ]);
 
-const initialData = reactive({ statusId: 0, name: "", code: "" });
+const initialData = reactive({
+  statusId: 0,
+  name: "",
+  code: "",
+  typeId: 0,
+});
 
 const handleSearch = (formData) => {
   Object.assign(initialData, formData);
   offset.value = 0;
-  fetchBrandList();
+  fetchCounterPartyList();
 };
 
 const handleReset = () => {
   Object.keys(initialData).forEach((key) => {
     delete initialData[key];
   });
-  Object.assign(initialData, { statusId: 0, name: "", code: "" });
-  fetchBrandList();
+  Object.assign(initialData, {
+    statusId: 0,
+    name: "",
+    code: "",
+    typeId: 0,
+  });
+  fetchCounterPartyList();
 };
 
 onMounted(() => {
-  getBrandStatusOptions(true);
+  getCounterPartyTypeOptions(true);
 });
 //#endregion
 
@@ -117,8 +171,11 @@ const totalRows = ref(0);
 
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
+  { label: "brand", key: "brandName", sortable: false },
   { label: "code", key: "code", sortable: false },
   { label: "name", key: "name", sortable: false },
+  { label: "type", key: "typeId", sortable: false },
+  { label: "outstanding_amount", key: "outstandingAmount", sortable: false },
   { label: "status", key: "statusId", sortable: false },
   { label: "created_at", key: "createdAt", sortable: false },
 ]);
@@ -128,16 +185,16 @@ const tableData = ref([]);
 const handleSort = ({ key, order }) => {
   sortKey.value = key;
   sortOrder.value = order;
-  fetchBrandList();
+  fetchCounterPartyList();
 };
 
 const handlePaginate = ({ offset: newOffset, limit: newLimit }) => {
   offset.value = newOffset;
   limit.value = newLimit;
-  fetchBrandList();
+  fetchCounterPartyList();
 };
 
-const fetchBrandList = async () => {
+const fetchCounterPartyList = async () => {
   try {
     const params = {
       offset: offset.value,
@@ -152,9 +209,9 @@ const fetchBrandList = async () => {
       }
     });
 
-    const resp = await callApi("/brand", "GET", null, params);
+    const resp = await callApi("/counterParty", "GET", null, params);
     if (resp) {
-      tableData.value = resp.brandList;
+      tableData.value = resp.counterPartyList;
       totalRows.value = resp.count;
     }
   } catch (error) {
@@ -163,28 +220,30 @@ const fetchBrandList = async () => {
 };
 
 onMounted(() => {
-  fetchBrandList();
+  fetchCounterPartyList();
 });
 //#endregion
 
 //#region MODAL
 const loadingStore = useSubmitLoadingStore();
 const isModalVisible = ref(false);
-const formTitle = ref("add_brand");
+const formTitle = ref("add_counterParty");
 const formData = reactive({});
 const isEdit = ref(false);
 
 const resetFormData = () => {
   Object.keys(formData).forEach((key) => delete formData[key]);
   Object.assign(formData, {
+    brandId: "",
     name: "",
     code: "",
+    typeId: 1,
     statusId: 1,
   });
 };
 
 const handleAdd = () => {
-  formTitle.value = "add_brand";
+  formTitle.value = "add_counterParty";
   isEdit.value = false;
   resetFormData();
   isModalVisible.value = true;
@@ -192,12 +251,12 @@ const handleAdd = () => {
 
 const handleEdit = async (row) => {
   try {
-    const resp = await callApi(`/brand/${row.id}`, "GET", null);
+    const resp = await callApi(`/counterParty/${row.id}`, "GET", null);
     resetFormData();
     if (resp) {
       Object.assign(formData, resp);
     }
-    formTitle.value = "edit_brand";
+    formTitle.value = "edit_counterParty";
     isEdit.value = true;
     isModalVisible.value = true;
   } catch (error) {
@@ -214,13 +273,21 @@ const closeModal = () => {
 const handleSave = async (submitData) => {
   try {
     if (isEdit.value) {
-      await callApi(`/brand/${submitData.id}`, "PATCH", submitData, null);
+      await callApi(
+        `/counterParty/${submitData.id}`,
+        "PATCH",
+        submitData,
+        null
+      );
     } else {
-      await callApi("/brand", "POST", submitData, null);
+      await callApi("/counterParty", "POST", submitData, null);
     }
-    handleMessage(t(isEdit.value ? "brand_updated" : "brand_created"), "success");
+    handleMessage(
+      t(isEdit.value ? "counterParty_updated" : "counterParty_created"),
+      "success"
+    );
     closeModal();
-    fetchBrandList();
+    fetchCounterPartyList();
   } catch (error) {
     handleApiError(error);
   } finally {

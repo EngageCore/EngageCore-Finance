@@ -1,7 +1,25 @@
 <template>
-  <DynamicSearchForm :fields="fields" :initialData="initialData" :showAddButton="true" @add="handleAdd" @submit="handleSearch" @reset="handleReset" />
+  <DynamicSearchForm
+    :fields="fields"
+    :initialData="initialData"
+    :showAddButton="true"
+    @add="handleAdd"
+    @submit="handleSearch"
+    @reset="handleReset"
+  />
 
-  <ReusableTable title="brand" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
+  <ReusableTable
+    title="member"
+    :headers="tableHeaders"
+    :data="tableData"
+    :offset="offset"
+    :limit="limit"
+    :totalRows="totalRows"
+    bordered
+    striped
+    @sort="handleSort"
+    @pagination="handlePaginate"
+  >
     <template #action="{ row }">
       <div class="flex justify-center items-center gap-2">
         <n-tooltip trigger="hover">
@@ -21,15 +39,9 @@
               </template>
             </n-button>
           </template>
-          {{ $t('edit') }}
+          {{ $t("edit") }}
         </n-tooltip>
       </div>
-    </template>
-
-    <template #statusId="{ row }">
-      <n-tag :type="getBrandStatusTagTypeById(row.statusId)" size="small" round>
-        {{ t(getBrandStatusNameById(row.statusId)) }}
-      </n-tag>
     </template>
 
     <template #createdAt="{ row }">
@@ -37,13 +49,21 @@
     </template>
   </ReusableTable>
 
-  <BrandModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :formData="formData" :isEdit="isEdit" @save="handleSave" @close="closeModal" />
+  <MemberModal
+    v-if="isModalVisible"
+    :isVisible="isModalVisible"
+    :formTitle="formTitle"
+    :formData="formData"
+    :isEdit="isEdit"
+    @save="handleSave"
+    @close="closeModal"
+  />
 </template>
 
 <script setup>
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
-import BrandModal from "@/components/modal/BrandModal.vue";
+import MemberModal from "@/components/modal/MemberModal.vue";
 import { PencilOutline } from "@vicons/ionicons5";
 import { ref, reactive, onMounted } from "vue";
 import { NButton, NIcon } from "naive-ui";
@@ -51,10 +71,6 @@ import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
 import { dateFormat, handleMessage } from "@/utils/common";
-import {
-  getBrandStatusNameById,
-  getBrandStatusTagTypeById,
-} from "@/enum/brandStatus";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 
@@ -63,48 +79,48 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 
 //#region FORM
-const { brandStatusOptions, getBrandStatusOptions } = useDropdown();
+const { brandOptions, getBrandOptions } = useDropdown();
 
 const fields = ref([
+  {
+    id: "brandId",
+    label: "brand",
+    type: "select",
+    options: brandOptions,
+    colClass: "col-span-12 lg:col-span-3",
+  },
   {
     id: "name",
     label: "name",
     type: "text",
     colClass: "col-span-12 lg:col-span-3",
   },
-  {
-    id: "code",
-    label: "code",
-    type: "text",
-    colClass: "col-span-12 lg:col-span-3",
-  },
-  {
-    id: "statusId",
-    label: "status",
-    type: "select",
-    options: brandStatusOptions,
-    colClass: "col-span-12 lg:col-span-3",
-  },
 ]);
 
-const initialData = reactive({ statusId: 0, name: "", code: "" });
+const initialData = reactive({
+  brandId: 0,
+  name: "",
+});
 
 const handleSearch = (formData) => {
   Object.assign(initialData, formData);
   offset.value = 0;
-  fetchBrandList();
+  fetchMemberList();
 };
 
 const handleReset = () => {
   Object.keys(initialData).forEach((key) => {
     delete initialData[key];
   });
-  Object.assign(initialData, { statusId: 0, name: "", code: "" });
-  fetchBrandList();
+  Object.assign(initialData, {
+    brandId: 0,
+    name: "",
+  });
+  fetchMemberList();
 };
 
 onMounted(() => {
-  getBrandStatusOptions(true);
+  getBrandOptions(true);
 });
 //#endregion
 
@@ -117,9 +133,8 @@ const totalRows = ref(0);
 
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
-  { label: "code", key: "code", sortable: false },
+  { label: "brand", key: "brandName", sortable: false },
   { label: "name", key: "name", sortable: false },
-  { label: "status", key: "statusId", sortable: false },
   { label: "created_at", key: "createdAt", sortable: false },
 ]);
 
@@ -128,16 +143,16 @@ const tableData = ref([]);
 const handleSort = ({ key, order }) => {
   sortKey.value = key;
   sortOrder.value = order;
-  fetchBrandList();
+  fetchMemberList();
 };
 
 const handlePaginate = ({ offset: newOffset, limit: newLimit }) => {
   offset.value = newOffset;
   limit.value = newLimit;
-  fetchBrandList();
+  fetchMemberList();
 };
 
-const fetchBrandList = async () => {
+const fetchMemberList = async () => {
   try {
     const params = {
       offset: offset.value,
@@ -152,9 +167,9 @@ const fetchBrandList = async () => {
       }
     });
 
-    const resp = await callApi("/brand", "GET", null, params);
+    const resp = await callApi("/member", "GET", null, params);
     if (resp) {
-      tableData.value = resp.brandList;
+      tableData.value = resp.memberList;
       totalRows.value = resp.count;
     }
   } catch (error) {
@@ -163,28 +178,27 @@ const fetchBrandList = async () => {
 };
 
 onMounted(() => {
-  fetchBrandList();
+  fetchMemberList();
 });
 //#endregion
 
 //#region MODAL
 const loadingStore = useSubmitLoadingStore();
 const isModalVisible = ref(false);
-const formTitle = ref("add_brand");
+const formTitle = ref("add_member");
 const formData = reactive({});
 const isEdit = ref(false);
 
 const resetFormData = () => {
   Object.keys(formData).forEach((key) => delete formData[key]);
   Object.assign(formData, {
+    brandId: null,
     name: "",
-    code: "",
-    statusId: 1,
   });
 };
 
 const handleAdd = () => {
-  formTitle.value = "add_brand";
+  formTitle.value = "add_member";
   isEdit.value = false;
   resetFormData();
   isModalVisible.value = true;
@@ -192,12 +206,12 @@ const handleAdd = () => {
 
 const handleEdit = async (row) => {
   try {
-    const resp = await callApi(`/brand/${row.id}`, "GET", null);
+    const resp = await callApi(`/member/${row.id}`, "GET", null);
     resetFormData();
     if (resp) {
       Object.assign(formData, resp);
     }
-    formTitle.value = "edit_brand";
+    formTitle.value = "edit_member";
     isEdit.value = true;
     isModalVisible.value = true;
   } catch (error) {
@@ -214,13 +228,16 @@ const closeModal = () => {
 const handleSave = async (submitData) => {
   try {
     if (isEdit.value) {
-      await callApi(`/brand/${submitData.id}`, "PATCH", submitData, null);
+      await callApi(`/member/${submitData.id}`, "PATCH", submitData, null);
     } else {
-      await callApi("/brand", "POST", submitData, null);
+      await callApi("/member", "POST", submitData, null);
     }
-    handleMessage(t(isEdit.value ? "brand_updated" : "brand_created"), "success");
+    handleMessage(
+      t(isEdit.value ? "member_updated" : "member_created"),
+      "success"
+    );
     closeModal();
-    fetchBrandList();
+    fetchMemberList();
   } catch (error) {
     handleApiError(error);
   } finally {
