@@ -7,6 +7,7 @@
 // - system: 系统设置 (role, user)
 // - master: 主数据 (brand, bankProvider, counterParty, member, bank)
 // - transaction: 交易 (transaction)
+// - report: 报表 (winlose)
 // =====================
 
 export const customModuleRoutes = [
@@ -142,6 +143,32 @@ export const customModuleRoutes = [
           title: 'transaction_list',
           i18nKey: 'transaction_list',
           icon: 'fa6-solid:list',
+          order: 1,
+          keepAlive: true
+        }
+      }
+    ]
+  },
+  // 报表 - Report
+  {
+    name: 'report',
+    path: '/report',
+    layout: 'base',
+    meta: {
+      title: 'report',
+      i18nKey: 'report',
+      icon: 'fa6-solid:chart-pie',
+      order: 5
+    },
+    children: [
+      {
+        name: 'report_winlose',
+        path: 'winlose',
+        view: () => import("@/views/management/winlose.vue"),
+        meta: {
+          title: 'winlose',
+          i18nKey: 'winlose',
+          icon: 'fa6-solid:chart-line',
           order: 1,
           keepAlive: true
         }
