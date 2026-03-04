@@ -20,4 +20,6 @@ export const views = {
   home: () => import("@/views/home/index.vue"),
   'management_role': () => import("@/views/management/role.vue"),
   'management_user': () => import("@/views/management/user.vue"),
+  'management_brand': () => import("@/views/management/brand.vue"),
+  'management_bankProvider': () => import("@/views/management/bankProvider.vue"),
 };

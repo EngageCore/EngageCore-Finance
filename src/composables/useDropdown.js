@@ -5,6 +5,7 @@ import { useApiError } from '@/composables/useApiError';
 import { useI18n } from 'vue-i18n';
 import { roleStatusEnum } from '@/enum/roleStatus';
 import { userStatusEnum } from '@/enum/userStatus';
+import { brandStatusEnum } from '@/enum/brandStatus';
 
 export function useDropdown() {
   const authStore = useAuthStore();
@@ -15,6 +16,7 @@ export function useDropdown() {
   const roleStatusOptions = ref([]);
   const roleOptions = ref([]);
   const userStatusOptions = ref([]);
+  const brandStatusOptions = ref([]);
 
   const getRoleStatusOptions = async (includeAll = true) => {
     let options = Object.values(roleStatusEnum).map(item => ({
@@ -66,6 +68,22 @@ export function useDropdown() {
     userStatusOptions.value = options;
   }
 
+  const getBrandStatusOptions = async (includeAll = true) => {
+    let options = Object.values(brandStatusEnum).map(item => ({
+      label: t(item.name),
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    brandStatusOptions.value = options;
+  }
+
   return {
     roleStatusOptions,
     getRoleStatusOptions,
@@ -73,5 +91,7 @@ export function useDropdown() {
     getRoleOptions,
     userStatusOptions,
     getUserStatusOptions,
+    brandStatusOptions,
+    getBrandStatusOptions,
   };
 }

@@ -45,6 +45,30 @@ export const customModuleRoutes = [
           order: 2,
           keepAlive: true
         }
+      },
+      {
+        name: 'management_brand',
+        path: 'brand',
+        view: () => import("@/views/management/brand.vue"),
+        meta: {
+          title: 'brand',
+          i18nKey: 'brand',
+          icon: 'fa6-solid:tags',
+          order: 3,
+          keepAlive: true
+        }
+      },
+      {
+        name: 'management_bankProvider',
+        path: 'bank-provider',
+        view: () => import("@/views/management/bankProvider.vue"),
+        meta: {
+          title: 'bankProvider',
+          i18nKey: 'bankProvider',
+          icon: 'fa6-solid:building-columns',
+          order: 4,
+          keepAlive: true
+        }
       }
     ]
   }

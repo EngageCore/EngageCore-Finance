@@ -10,8 +10,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     AmbientParticles: typeof import('./src/components/custom/ambient-particles.vue')['default']
     AppProvider: typeof import('./src/components/common/app-provider.vue')['default']
+    BankProviderModal: typeof import('./src/components/modal/BankProviderModal.vue')['default']
     BetterScroll: typeof import('./src/components/custom/better-scroll.vue')['default']
     BountyBurstModal: typeof import('./src/components/modal/bountyBurstModal.vue')['default']
+    BrandModal: typeof import('./src/components/modal/BrandModal.vue')['default']
     BrandTurnoverLeaderboardAdjustModal: typeof import('./src/components/modal/brandTurnoverLeaderboardAdjustModal.vue')['default']
     BrandTurnoverLeaderboardModal: typeof import('./src/components/modal/brandTurnoverLeaderboardModal.vue')['default']
     ButtonIcon: typeof import('./src/components/custom/button-icon.vue')['default']
