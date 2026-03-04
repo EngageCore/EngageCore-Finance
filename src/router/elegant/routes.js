@@ -93,6 +93,18 @@ export const customModuleRoutes = [
           order: 6,
           keepAlive: true
         }
+      },
+      {
+        name: 'management_bank',
+        path: 'bank',
+        view: () => import("@/views/management/bank.vue"),
+        meta: {
+          title: 'bank',
+          i18nKey: 'bank',
+          icon: 'fa6-solid:wallet',
+          order: 7,
+          keepAlive: true
+        }
       }
     ]
   }

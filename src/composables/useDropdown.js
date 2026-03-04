@@ -23,6 +23,7 @@ export function useDropdown() {
   const bankProviderStatusOptions = ref([]);
   const counterPartyTypeOptions = ref([]);
   const brandOptions = ref([]);
+  const bankProviderOptions = ref([]);
   const counterPartyStatusOptions = ref([]);
 
   const getRoleStatusOptions = async (includeAll = true) => {
@@ -140,6 +141,23 @@ export function useDropdown() {
     brandOptions.value = options;
   }
 
+  const getBankProviderOptions = async (includeAll = true) => {
+    const resp = await callApi('/bankProvider', 'GET');
+    let options = (resp.bankProviderList || []).map(item => ({
+      label: item.name,
+      value: item.id
+    }));
+
+    if (includeAll) {
+      options.unshift({
+        label: t('all'),
+        value: 0
+      });
+    }
+
+    bankProviderOptions.value = options;
+  }
+
   const getCounterPartyStatusOptions = async (includeAll = true) => {
     let options = Object.values(counterPartyStatusEnum).map(item => ({
       label: t(item.name),
@@ -171,6 +189,8 @@ export function useDropdown() {
     getCounterPartyTypeOptions,
     brandOptions,
     getBrandOptions,
+    bankProviderOptions,
+    getBankProviderOptions,
     counterPartyStatusOptions,
     getCounterPartyStatusOptions,
   };
