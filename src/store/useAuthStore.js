@@ -35,7 +35,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     id: '',
     name: '',
     roleId: 2,
-    statusId: 1
+    statusId: 1,
+    accessPageIds: [],
+    accessActionIds: [],
+    accessFeatureIds: []
   });
 
   const isSuper = computed(() => {
@@ -58,6 +61,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       userInfo.id = resp.id;
       userInfo.roleId = resp.roleId;
       userInfo.statusId = resp.statusId;
+      userInfo.accessPageIds = resp.accessPageIds;
+      userInfo.accessActionIds = resp.accessActionIds;
+      userInfo.accessFeatureIds = resp.accessFeatureIds;
     }
     return true
   }
@@ -93,6 +99,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       userInfo.id = userData.id;
       userInfo.roleId = userData.roleId;
       userInfo.statusId = userData.statusId;
+      userInfo.accessPageIds = userData.accessPageIds;
+      userInfo.accessActionIds = userData.accessActionIds;
+      userInfo.accessFeatureIds = userData.accessFeatureIds;
     }
     const pass = await loginByToken(loginToken);
     // await updateUserRole(userData.roleId);
@@ -152,6 +161,18 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     }
   }
 
+  function hasPageAccess(pageId) {
+    return userInfo.accessPageIds.includes(pageId);
+  }
+
+  function hasActionAccess(actionId) {
+    return userInfo.accessActionIds.includes(actionId);
+  }
+
+  function hasFeatureAccess(featureId) {
+    return userInfo.accessFeatureIds.includes(featureId);
+  }
+
   return {
     token,
     userInfo,
@@ -163,6 +184,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     logout,
     getUserInfo,
     updateUserInfo,
-    initUserInfo
+    initUserInfo,
+    hasPageAccess,
+    hasActionAccess,
+    hasFeatureAccess
   };
 });
