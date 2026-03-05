@@ -54,12 +54,26 @@ function getGlobalMenuByBaseRoute(route) {
 }
 function getGlobalMenusByAuthRoutes(routes, authStore) {
   const menus = [];
+  const hasPagePermission = route => {
+    const pageId = route.meta?.pageId;
+    // 没有配置 pageId 的路由不做页面权限控制
+    if (!pageId) return true;
+
+    const accessPageIds = authStore?.userInfo?.accessPageIds || [];
+    if (!Array.isArray(accessPageIds)) return false;
+
+    return accessPageIds.includes(pageId);
+  };
   const typeId = authStore?.userInfo?.typeId || 0;
   // typeId === 2 => super admin (host turnover only)
   // typeId === 1 => brand user (all modules, but no host turnover)
   const isSuperAdmin = typeId === 2;
   
   routes.forEach(route => {
+    // Page-level permission check for top-level routes (single-level pages)
+    if (!hasPagePermission(route)) {
+      return;
+    }
     // Route-level filtering by type
     if (isSuperAdmin) {
       // Super admin: only show host turnover leaderboard module (and keep home)
@@ -76,6 +90,9 @@ function getGlobalMenusByAuthRoutes(routes, authStore) {
       if (route.children?.length) {
         menu.children = route.children
           .filter(child => {
+            // Page-level permission check for child routes
+            if (!hasPagePermission(child)) return false;
+
             // Filter out hidden menu items
             if (child.meta?.hideInMenu) return false;
             
@@ -277,9 +294,10 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   }
 
   async function initAuthRoute() {
-    // if (!authStore.userInfo.userId) {
-       await authStore.initUserInfo();
-    // }
+    // 如果还没有 userInfo（比如刷新页面只剩下 token），才去调用 /checksession
+    if (!authStore.userInfo.id) {
+      await authStore.initUserInfo();
+    }
     if (authRouteMode.value === 'static') {
       initStaticAuthRoute();
     } else {

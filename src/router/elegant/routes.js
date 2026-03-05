@@ -10,6 +10,8 @@
 // - report: 报表 (winlose)
 // =====================
 
+import { ACCESS_PAGES } from '@/enum/accessPermission';
+
 export const customModuleRoutes = [
   // 系统设置 - Role, User
   {
@@ -32,7 +34,8 @@ export const customModuleRoutes = [
           i18nKey: 'role',
           icon: 'fa6-solid:user-shield',
           order: 1,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.role
         }
       },
       {
@@ -44,7 +47,8 @@ export const customModuleRoutes = [
           i18nKey: 'user',
           icon: 'fa6-solid:user',
           order: 2,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.user
         }
       }
     ]
@@ -70,7 +74,8 @@ export const customModuleRoutes = [
           i18nKey: 'brand',
           icon: 'fa6-solid:tags',
           order: 1,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.brand
         }
       },
       {
@@ -82,7 +87,8 @@ export const customModuleRoutes = [
           i18nKey: 'bankProvider',
           icon: 'fa6-solid:building-columns',
           order: 2,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.bankProvider
         }
       },
       {
@@ -94,7 +100,8 @@ export const customModuleRoutes = [
           i18nKey: 'counterParty',
           icon: 'fa6-solid:handshake',
           order: 3,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.counterParty
         }
       },
       {
@@ -106,7 +113,8 @@ export const customModuleRoutes = [
           i18nKey: 'member',
           icon: 'fa6-solid:users',
           order: 4,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.member
         }
       },
       {
@@ -118,7 +126,8 @@ export const customModuleRoutes = [
           i18nKey: 'bank',
           icon: 'fa6-solid:wallet',
           order: 5,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.bank
         }
       }
     ]
@@ -144,7 +153,8 @@ export const customModuleRoutes = [
           i18nKey: 'transaction_list',
           icon: 'fa6-solid:list',
           order: 1,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.transaction
         }
       }
     ]
@@ -170,7 +180,8 @@ export const customModuleRoutes = [
           i18nKey: 'winlose',
           icon: 'fa6-solid:chart-line',
           order: 1,
-          keepAlive: true
+          keepAlive: true,
+          pageId: ACCESS_PAGES.winlose
         }
       }
     ]

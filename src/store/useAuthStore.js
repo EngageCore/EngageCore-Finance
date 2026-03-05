@@ -56,14 +56,16 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   async function getUserInfo() {
     const resp = await callApi('/checksession', 'GET');
-    if(resp) {
-      userInfo.userName = resp.username;
-      userInfo.id = resp.id;
-      userInfo.roleId = resp.roleId;
-      userInfo.statusId = resp.statusId;
-      userInfo.accessPageIds = resp.accessPageIds;
-      userInfo.accessActionIds = resp.accessActionIds;
-      userInfo.accessFeatureIds = resp.accessFeatureIds;
+    if (resp) {
+      const user = resp.user || resp;
+
+      userInfo.userName = user.username || user.name || '';
+      userInfo.id = user.id;
+      userInfo.roleId = user.roleId;
+      userInfo.statusId = user.statusId;
+      userInfo.accessPageIds = Array.isArray(user.accessPageIds) ? user.accessPageIds.map(id => Number(id)) : [];
+      userInfo.accessActionIds = Array.isArray(user.accessActionIds) ? user.accessActionIds.map(id => Number(id)) : [];
+      userInfo.accessFeatureIds = Array.isArray(user.accessFeatureIds) ? user.accessFeatureIds.map(id => Number(id)) : [];
     }
     return true
   }
@@ -99,9 +101,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       userInfo.id = userData.id;
       userInfo.roleId = userData.roleId;
       userInfo.statusId = userData.statusId;
-      userInfo.accessPageIds = userData.accessPageIds;
-      userInfo.accessActionIds = userData.accessActionIds;
-      userInfo.accessFeatureIds = userData.accessFeatureIds;
+      userInfo.accessPageIds = Array.isArray(userData.accessPageIds) ? userData.accessPageIds.map(id => Number(id)) : [];
+      userInfo.accessActionIds = Array.isArray(userData.accessActionIds) ? userData.accessActionIds.map(id => Number(id)) : [];
+      userInfo.accessFeatureIds = Array.isArray(userData.accessFeatureIds) ? userData.accessFeatureIds.map(id => Number(id)) : [];
     }
     const pass = await loginByToken(loginToken);
     // await updateUserRole(userData.roleId);
