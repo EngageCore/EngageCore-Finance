@@ -1,12 +1,30 @@
 <template>
-  <DynamicSearchForm :fields="fields" :initialData="initialData" :showAddButton="true" @add="handleAdd" @submit="handleSearch" @reset="handleReset" />
+  <DynamicSearchForm
+    :fields="fields"
+    :initialData="initialData"
+    :showAddButton="canAddRole"
+    @add="handleAdd"
+    @submit="handleSearch"
+    @reset="handleReset"
+  />
 
-  <ReusableTable title="role" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
+  <ReusableTable title="role" :headers="filteredTableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
     <template #action="{ row }">
-      <div class="flex justify-center items-center gap-2">
+      <div
+        v-if="canEditRole"
+        class="flex justify-center items-center gap-2"
+      >
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-button circle tertiary type="primary" size="small" class="!w-8 !h-8 flex items-center justify-center" @click="handleEdit(row)" :disabled="row.id == 1">
+            <n-button
+              circle
+              tertiary
+              type="primary"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="handleEdit(row)"
+              :disabled="row.id == 1"
+            >
               <template #icon>
                 <n-icon class="text-lg">
                   <PencilOutline />
@@ -38,7 +56,7 @@ import ReusableTable from '@/components/ReusableTable.vue';
 import DynamicSearchForm from '@/components/DynamicSearchForm.vue';
 import RoleModal from '@/components/modal/RoleModal.vue';
 import { PencilOutline } from '@vicons/ionicons5';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { NButton, NIcon } from 'naive-ui';
 import { useI18n } from "vue-i18n";
 import { useCallApi } from '@/hooks/useCallApi';
@@ -47,10 +65,22 @@ import { dateFormat, handleMessage } from '@/utils/common';
 import { getRoleStatusNameById, getRoleStatusTagTypeById } from '@/enum/roleStatus';
 import { useApiError } from '@/composables/useApiError';
 import { useSubmitLoadingStore } from '@/store/useSubmitLoadingStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { ACCESS_ACTIONS } from '@/enum/accessPermission';
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
+const authStore = useAuthStore();
+const canListRole = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listRole)
+);
+const canAddRole = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addRole)
+);
+const canEditRole = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateRole)
+);
 
 //#region Form
 const { roleStatusOptions, getRoleStatusOptions } = useDropdown();
@@ -88,6 +118,15 @@ const sortKey = ref('createdAt')
 const sortOrder = ref('desc')
 const totalRows = ref(3)
 
+const filteredTableHeaders = computed(() => {
+  return tableHeaders.value.filter((header) => {
+    if (header.key === "action") {
+      return canEditRole.value;
+    }
+    return true;
+  });
+});
+
 const tableHeaders = ref([
   { label: 'action', key: 'action', sortable: false },
   { label: 'name', key: 'name', sortable: false },
@@ -123,7 +162,13 @@ const fetchRoleList = async () => {
         params[key] = initialData[key];
       }
     });
-    
+
+    if (!canListRole.value) {
+      tableData.value = [];
+      totalRows.value = 0;
+      return;
+    }
+
     const resp = await callApi('/role', 'GET', null, params);
     if (resp) {
       tableData.value = resp.roleList;

@@ -1,12 +1,30 @@
 <template>
-  <DynamicSearchForm :fields="fields" :initialData="initialData" :showAddButton="true" @add="handleAdd" @submit="handleSearch" @reset="handleReset" />
+  <DynamicSearchForm
+    :fields="fields"
+    :initialData="initialData"
+    :showAddButton="canAddUser"
+    @add="handleAdd"
+    @submit="handleSearch"
+    @reset="handleReset"
+  />
 
-  <ReusableTable title="user" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
+  <ReusableTable title="user" :headers="filteredTableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
     <template #action="{ row }">
-      <div class="flex justify-center items-center gap-2">
+      <div
+        v-if="canEditUser"
+        class="flex justify-center items-center gap-2"
+      >
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-button circle tertiary type="primary" size="small" class="!w-8 !h-8 flex items-center justify-center" @click="handleEdit(row)" :disabled="row.id == 1">
+            <n-button
+              circle
+              tertiary
+              type="primary"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="handleEdit(row)"
+              :disabled="row.id == 1"
+            >
               <template #icon>
                 <n-icon class="text-lg">
                   <PencilOutline />
@@ -38,7 +56,7 @@ import ReusableTable from '@/components/ReusableTable.vue';
 import DynamicSearchForm from '@/components/DynamicSearchForm.vue';
 import UserModal from '@/components/modal/UserModal.vue';
 import { PencilOutline } from '@vicons/ionicons5';
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { NButton, NIcon } from 'naive-ui';
 import { useI18n } from "vue-i18n";
 import { useCallApi } from '@/hooks/useCallApi';
@@ -47,10 +65,22 @@ import { dateFormat, handleMessage } from '@/utils/common';
 import { getUserNameById, getUserTagTypeById } from '@/enum/userStatus';
 import { useApiError } from '@/composables/useApiError';
 import { useSubmitLoadingStore } from '@/store/useSubmitLoadingStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { ACCESS_ACTIONS } from '@/enum/accessPermission';
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
+const authStore = useAuthStore();
+const canListUser = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listUser)
+);
+const canAddUser = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addUser)
+);
+const canEditUser = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateUser)
+);
 
 //#region Form
 const { roleOptions, getRoleOptions, userStatusOptions, getUserStatusOptions } = useDropdown();
@@ -90,6 +120,15 @@ const sortKey = ref('createdAt')
 const sortOrder = ref('desc')
 const totalRows = ref(3)
 
+const filteredTableHeaders = computed(() => {
+  return tableHeaders.value.filter((header) => {
+    if (header.key === "action") {
+      return canEditUser.value;
+    }
+    return true;
+  });
+});
+
 const tableHeaders = ref([
   { label: 'action', key: 'action', sortable: false },
   { label: 'name', key: 'name', sortable: false },
@@ -126,7 +165,13 @@ const fetchUserList = async () => {
         params[key] = initialData[key];
       }
     });
-    
+
+    if (!canListUser.value) {
+      tableData.value = [];
+      totalRows.value = 0;
+      return;
+    }
+
     const resp = await callApi('/user', 'GET', null, params);
     if (resp) {
       tableData.value = resp.userList;

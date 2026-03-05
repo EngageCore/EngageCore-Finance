@@ -1,9 +1,19 @@
 <template>
-  <DynamicSearchForm :fields="fields" :initialData="initialData" :showAddButton="true" @add="handleAdd" @submit="handleSearch" @reset="handleReset" />
+  <DynamicSearchForm
+    :fields="fields"
+    :initialData="initialData"
+    :showAddButton="canAddBrand"
+    @add="handleAdd"
+    @submit="handleSearch"
+    @reset="handleReset"
+  />
 
-  <ReusableTable title="brand" :headers="tableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
+  <ReusableTable title="brand" :headers="filteredTableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
     <template #action="{ row }">
-      <div class="flex justify-center items-center gap-2">
+      <div
+        v-if="canEditBrand"
+        class="flex justify-center items-center gap-2"
+      >
         <n-tooltip trigger="hover">
           <template #trigger>
             <n-button
@@ -45,7 +55,7 @@ import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import BrandModal from "@/components/modal/BrandModal.vue";
 import { PencilOutline } from "@vicons/ionicons5";
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { NButton, NIcon } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
@@ -57,10 +67,22 @@ import {
 } from "@/enum/brandStatus";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { ACCESS_ACTIONS } from "@/enum/accessPermission";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
+const authStore = useAuthStore();
+const canListBrand = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listBrand)
+);
+const canAddBrand = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addBrand)
+);
+const canEditBrand = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateBrand)
+);
 
 //#region FORM
 const { brandStatusOptions, getBrandStatusOptions } = useDropdown();
@@ -115,6 +137,15 @@ const sortKey = ref("createdAt");
 const sortOrder = ref("desc");
 const totalRows = ref(0);
 
+const filteredTableHeaders = computed(() => {
+  return tableHeaders.value.filter((header) => {
+    if (header.key === "action") {
+      return canEditBrand.value;
+    }
+    return true;
+  });
+});
+
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
   { label: "code", key: "code", sortable: false },
@@ -151,6 +182,12 @@ const fetchBrandList = async () => {
         params[key] = initialData[key];
       }
     });
+
+    if (!canListBrand.value) {
+      tableData.value = [];
+      totalRows.value = 0;
+      return;
+    }
 
     const resp = await callApi("/brand", "GET", null, params);
     if (resp) {

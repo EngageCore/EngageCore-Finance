@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
@@ -40,11 +40,17 @@ import { formatAmount, formatDate, convertToUTC } from "@/utils/common";
 import { useApiError } from "@/composables/useApiError";
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
+import { useAuthStore } from "@/store/useAuthStore";
+import { ACCESS_ACTIONS } from "@/enum/accessPermission";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 const { brandOptions, getBrandOptions } = useDropdown();
+const authStore = useAuthStore();
+const canListWinlose = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listWinlose)
+);
 
 //#region FORM
 const fields = ref([
@@ -89,7 +95,7 @@ const handleReset = () => {
 //#region TABLE
 const loading = ref(true);
 const tableData = ref([]);
-
+const totalRows = ref(0);
 const tableHeaders = ref([
   { label: "date", key: "date", sortable: false },
   { label: "brand", key: "brandName", sortable: false },
@@ -110,12 +116,17 @@ const fetchWinlose = async () => {
         params[key] = initialData[key];
       }
     });
-    
+
+    if (!canListWinlose.value) {
+      tableData.value = [];
+      totalRows.value = 0;
+      return;
+    }
+
     const resp = await callApi("/report/winlose", "GET", null, params);
     if (resp) {
       tableData.value = resp.list;
-    } else {
-      tableData.value = [];
+      totalRows.value = resp.count;
     }
   } catch (error) {
     handleApiError(error);

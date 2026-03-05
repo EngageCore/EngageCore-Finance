@@ -2,7 +2,7 @@
   <DynamicSearchForm
     :fields="fields"
     :initialData="initialData"
-    :showAddButton="true"
+    :showAddButton="canAddTransaction"
     @add="handleAdd"
     @submit="handleSearch"
     @reset="handleReset"
@@ -68,7 +68,7 @@
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import TransactionModal from "@/components/modal/TransactionModal.vue";
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
@@ -76,10 +76,16 @@ import { dateFormat, handleMessage, formatAmount } from "@/utils/common";
 import { getTransactionTypeNameById } from "@/enum/transactionType";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { ACCESS_ACTIONS } from "@/enum/accessPermission";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
+const authStore = useAuthStore();
+const canAddTransaction = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addTransaction)
+);
 
 //#region FORM
 const { brandOptions, getBrandOptions, transactionTypeOptions, getTransactionTypeOptions } =

@@ -2,7 +2,7 @@
   <DynamicSearchForm
     :fields="fields"
     :initialData="initialData"
-    :showAddButton="true"
+    :showAddButton="canAddMember"
     @add="handleAdd"
     @submit="handleSearch"
     @reset="handleReset"
@@ -10,7 +10,7 @@
 
   <ReusableTable
     title="member"
-    :headers="tableHeaders"
+    :headers="filteredTableHeaders"
     :data="tableData"
     :offset="offset"
     :limit="limit"
@@ -21,7 +21,10 @@
     @pagination="handlePaginate"
   >
     <template #action="{ row }">
-      <div class="flex justify-center items-center gap-2">
+      <div
+        v-if="canEditMember"
+        class="flex justify-center items-center gap-2"
+      >
         <n-tooltip trigger="hover">
           <template #trigger>
             <n-button
@@ -65,7 +68,7 @@ import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import MemberModal from "@/components/modal/MemberModal.vue";
 import { PencilOutline } from "@vicons/ionicons5";
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { NButton, NIcon } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
@@ -73,10 +76,22 @@ import { useDropdown } from "@/composables/useDropdown";
 import { dateFormat, handleMessage } from "@/utils/common";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { ACCESS_ACTIONS } from "@/enum/accessPermission";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
+const authStore = useAuthStore();
+const canListMember = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listMember)
+);
+const canAddMember = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addMember)
+);
+const canEditMember = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateMember)
+);
 
 //#region FORM
 const { brandOptions, getBrandOptions } = useDropdown();
@@ -131,6 +146,15 @@ const sortKey = ref("createdAt");
 const sortOrder = ref("desc");
 const totalRows = ref(0);
 
+const filteredTableHeaders = computed(() => {
+  return tableHeaders.value.filter((header) => {
+    if (header.key === "action") {
+      return canEditMember.value;
+    }
+    return true;
+  });
+});
+
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
   { label: "brand", key: "brandName", sortable: false },
@@ -166,6 +190,12 @@ const fetchMemberList = async () => {
         params[key] = initialData[key];
       }
     });
+
+    if (!canListMember.value) {
+      tableData.value = [];
+      totalRows.value = 0;
+      return;
+    }
 
     const resp = await callApi("/member", "GET", null, params);
     if (resp) {
