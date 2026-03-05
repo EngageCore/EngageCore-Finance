@@ -50,7 +50,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   function resetStore() {
     authStore.$reset();
     clearAuthStorage();
-    tabStore.clearTabs();
+    tabStore.resetTabStore();
     routeStore.resetStore();
   }
 
@@ -144,7 +144,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   function checkTabClear() {
     const { resetCacheStrategy } = routeStore;
     if (resetCacheStrategy === 'login') {
-      tabStore.clearTabs();
+      tabStore.resetTabStore();
       return true;
     }
     return false;

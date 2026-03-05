@@ -293,6 +293,12 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
     }
   }
 
+  function resetTabStore() {
+    tabs.value = [];
+    activeTabId.value = '';
+    localStg.remove('globalTabs');
+  }
+
   return {
     tabs: allTabs,
     activeTabId,
@@ -312,6 +318,7 @@ export const useTabStore = defineStore(SetupStoreId.Tab, () => {
     isTabRetain,
     updateTabsByLocale,
     getTabIdByRoute,
-    cacheTabs
+    cacheTabs,
+    resetTabStore
   };
 });
