@@ -23,7 +23,7 @@
       <n-form-item :label="$t('type')" path="typeId" required>
         <n-select
           v-model:value="localFormData.typeId"
-          :options="transactionTypeOptions"
+          :options="filteredTransactionTypeOptions"
           :placeholder="$t('please_select')"
           clearable
         />
@@ -170,15 +170,23 @@ import { useCallApi } from "@/hooks/useCallApi";
 import { useI18n } from "vue-i18n";
 import ReusableSingleModal from "@/components/ReusableSingleModal.vue";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
+const authStore = useAuthStore();
 const {
   brandOptions,
   getBrandOptions,
   transactionTypeOptions,
   getTransactionTypeOptions,
 } = useDropdown();
+
+const filteredTransactionTypeOptions = computed(() =>
+  (transactionTypeOptions.value || []).filter((opt) =>
+    authStore.hasFeatureAccess(opt.value)
+  )
+);
 
 const bankOptionsLocal = ref([]);
 const memberOptionsLocal = ref([]);
@@ -202,7 +210,21 @@ const localFormData = reactive({});
 
 watch(
   () => props.formData,
-  (v) => Object.assign(localFormData, v || {}),
+  (v) => {
+    Object.assign(localFormData, v || {});
+  },
+  { immediate: true }
+);
+
+watch(
+  filteredTransactionTypeOptions,
+  (opts) => {
+    if (!opts || opts.length === 0) return;
+    const allowedIds = opts.map((o) => o.value);
+    if (!allowedIds.includes(currentTypeId.value)) {
+      localFormData.typeId = allowedIds[0];
+    }
+  },
   { immediate: true }
 );
 
