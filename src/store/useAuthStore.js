@@ -50,7 +50,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   function resetStore() {
     authStore.$reset();
     clearAuthStorage();
-    tabStore.cacheTabs();
+    tabStore.clearTabs();
     routeStore.resetStore();
   }
 

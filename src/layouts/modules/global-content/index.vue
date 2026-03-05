@@ -36,22 +36,15 @@ function resetScroll() {
 <template>
   <AmbientParticles />
   <RouterView v-slot="{ Component, route }">
-    <Transition
-      :name="transitionName"
-      @before-leave="appStore.setContentXScrollable(true)"
-      @after-leave="resetScroll"
-      @after-enter="appStore.setContentXScrollable(false)"
-    >
-      <KeepAlive :include="routeStore.cacheRoutes" :exclude="routeStore.excludeCacheRoutes">
-        <component
-          :is="Component"
-          v-if="appStore.reloadFlag"
-          :key="tabStore.getTabIdByRoute(route)"
-          :class="{ 'p-16px': showPadding }"
-          class="flex-grow bg-layout transition-300 route-surface"
-        />
-      </KeepAlive>
-    </Transition>
+    <KeepAlive :include="routeStore.cacheRoutes" :exclude="routeStore.excludeCacheRoutes">
+      <component
+        :is="Component"
+        v-if="appStore.reloadFlag"
+        :key="tabStore.getTabIdByRoute(route)"
+        :class="{ 'p-16px': showPadding }"
+        class="flex-grow bg-layout route-surface"
+      />
+    </KeepAlive>
   </RouterView>
 </template>
 
@@ -59,17 +52,5 @@ function resetScroll() {
 .route-surface {
   position: relative;
   z-index: 1;
-  animation: route-enter 420ms ease-out;
-}
-
-@keyframes route-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.995);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 </style>
