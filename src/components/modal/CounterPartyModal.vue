@@ -78,7 +78,7 @@ const emit = defineEmits(["close", "update:formData", "save"]);
 
 onMounted(() => {
   getCounterPartyTypeOptions(false);
-  getBrandOptions(false);
+  getBrandOptions(false, true);
   getCounterPartyStatusOptions(false);
 });
 

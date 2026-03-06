@@ -43,7 +43,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "update:formData", "save"]);
 
 onMounted(() => {
-  getRoleOptions(false);
+  getRoleOptions(false, true);
   getUserStatusOptions(false);
 });
 //#endregion

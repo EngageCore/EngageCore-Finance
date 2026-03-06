@@ -51,7 +51,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "update:formData", "save"]);
 
 onMounted(() => {
-  getBrandOptions(false);
+  getBrandOptions(false, true);
 });
 
 const localFormData = reactive({});

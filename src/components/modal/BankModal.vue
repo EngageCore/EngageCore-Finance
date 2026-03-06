@@ -89,8 +89,8 @@ const props = defineProps({
 const emit = defineEmits(["close", "update:formData", "save"]);
 
 onMounted(() => {
-  getBrandOptions(false);
-  getBankProviderOptions(false);
+  getBrandOptions(false, true);
+  getBankProviderOptions(false, true);
 });
 
 const localFormData = reactive({});

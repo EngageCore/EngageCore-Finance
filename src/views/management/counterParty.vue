@@ -131,10 +131,7 @@ const fields = ref([
     id: "typeId",
     label: "type",
     type: "select",
-    options: [
-      { label: t("partner"), value: 1 },
-      { label: t("bank_agent"), value: 2 },
-    ],
+    options: counterPartyTypeOptions,
     colClass: "col-span-12 lg:col-span-3",
   },
   {

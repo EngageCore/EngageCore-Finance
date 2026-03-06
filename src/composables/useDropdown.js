@@ -47,12 +47,13 @@ export function useDropdown() {
     roleStatusOptions.value = options;
   }
 
-  const getRoleOptions = async (includeAll = true) => {
-    const resp = await callApi('/role', 'GET');
+  const getRoleOptions = async (includeAll = true, disableInactive = false) => {
+    const resp = await callApi('/role', 'GET', null);
 
     let options = resp.roleList.map(item => ({
       label: item.name,
-      value: item.id
+      value: item.id,
+      disabled: disableInactive && item.statusId === 2
     }));
 
     if (includeAll) {
@@ -129,11 +130,12 @@ export function useDropdown() {
     counterPartyTypeOptions.value = options;
   }
 
-  const getBrandOptions = async (includeAll = true) => {
+  const getBrandOptions = async (includeAll = true, disableInactive = false) => {
     const resp = await callApi('/brand', 'GET');
     let options = resp.brandList.map(item => ({
       label: item.name,
-      value: item.id
+      value: item.id,
+      disabled: disableInactive && item.statusId === 2
     }));
     
     if (includeAll) {
@@ -146,11 +148,12 @@ export function useDropdown() {
     brandOptions.value = options;
   }
 
-  const getBankProviderOptions = async (includeAll = true) => {
+  const getBankProviderOptions = async (includeAll = true, disableInactive = false) => {
     const resp = await callApi('/bankProvider', 'GET');
     let options = (resp.bankProviderList || []).map(item => ({
       label: item.name,
-      value: item.id
+      value: item.id,
+      disabled: disableInactive && item.statusId === 2
     }));
 
     if (includeAll) {
