@@ -20,6 +20,16 @@
     @sort="handleSort"
     @pagination="handlePaginate"
   >
+    <template #header-right>
+      <n-button
+        v-if="canAddMember"
+        size="small"
+        type="primary"
+        @click="openBulkModal"
+      >
+        {{ $t('bulk_add_member') }}
+      </n-button>
+    </template>
     <template #action="{ row }">
       <div
         v-if="canEditMember"
@@ -61,6 +71,36 @@
     @save="handleSave"
     @close="closeModal"
   />
+
+  <n-modal v-model:show="isBulkModalVisible" preset="dialog">
+    <template #header>
+      {{ $t("bulk_add_member") }}
+    </template>
+    <div class="flex flex-col gap-4">
+      <n-button size="small" type="primary" @click="downloadBulkTemplate">
+        {{ $t("download_template") }}
+      </n-button>
+      <n-upload
+        :file-list="bulkFileList"
+        :on-update:file-list="handleBulkFileChange"
+        :max="1"
+        accept=".xlsx,.xls"
+        :default-upload="false"
+      >
+        <n-upload-dragger>
+          <n-text>{{ $t("please_select") }} Excel</n-text>
+        </n-upload-dragger>
+      </n-upload>
+    </div>
+    <template #action>
+      <n-button @click="closeBulkModal">
+        {{ $t("cancel") }}
+      </n-button>
+      <n-button type="primary" @click="handleBulkConfirm">
+        {{ $t("submit") }}
+      </n-button>
+    </template>
+  </n-modal>
 </template>
 
 <script setup>
@@ -69,7 +109,7 @@ import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import MemberModal from "@/components/modal/MemberModal.vue";
 import { PencilOutline } from "@vicons/ionicons5";
 import { ref, reactive, onMounted, computed } from "vue";
-import { NButton, NIcon } from "naive-ui";
+import { NButton, NIcon, NModal, NUpload, NUploadDragger, NText } from "naive-ui";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
@@ -78,6 +118,7 @@ import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ACCESS_ACTIONS } from "@/enum/accessPermission";
+import * as XLSX from "xlsx";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
@@ -276,5 +317,81 @@ const handleSave = async (submitData) => {
   }
 };
 //#endregion
-</script>
 
+//#region BULK ADD
+const isBulkModalVisible = ref(false);
+const bulkFileList = ref([]);
+
+const openBulkModal = () => {
+  bulkFileList.value = [];
+  isBulkModalVisible.value = true;
+};
+
+const closeBulkModal = () => {
+  isBulkModalVisible.value = false;
+  bulkFileList.value = [];
+};
+
+const handleBulkFileChange = (files) => {
+  bulkFileList.value = files.slice(-1);
+};
+
+const downloadBulkTemplate = () => {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([["brandCode", "code", "name"]]);
+  XLSX.utils.book_append_sheet(wb, ws, "Members");
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([wbout], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "member_bulk_template.xlsx";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const handleBulkConfirm = async () => {
+  try {
+    if (!bulkFileList.value.length) {
+      handleMessage(t("please_select"), "warning");
+      return;
+    }
+    const file = bulkFileList.value[0].file;
+    if (!file) {
+      handleMessage(t("please_select"), "warning");
+      return;
+    }
+
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet);
+
+    const payload = rows
+      .map((row) => ({
+        brandCode: String(row.brandCode || "").trim(),
+        code: String(row.code || "").trim(),
+        name: String(row.name || "").trim(),
+      }))
+      .filter((item) => item.brandCode && item.code && item.name);
+
+    if (!payload.length) {
+      handleMessage(t("no_data"), "warning");
+      return;
+    }
+
+    await callApi("/member/bulk", "POST", payload, null);
+    handleMessage(t("member_created"), "success");
+    closeBulkModal();
+    fetchMemberList();
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+//#endregion
+</script>
