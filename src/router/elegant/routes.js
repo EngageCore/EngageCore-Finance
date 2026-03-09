@@ -183,6 +183,32 @@ export const customModuleRoutes = [
           keepAlive: true,
           pageId: ACCESS_PAGES.winlose
         }
+      },
+      {
+        name: 'report_winlose_bank',
+        path: 'winlose-bank',
+        view: () => import("@/views/management/winloseBank.vue"),
+        meta: {
+          title: 'winlose_by_bank',
+          i18nKey: 'winlose_by_bank',
+          icon: 'fa6-solid:chart-line',
+          order: 2,
+          keepAlive: true,
+          pageId: ACCESS_PAGES.winlose
+        }
+      },
+      {
+        name: 'report_winlose_month',
+        path: 'winlose-month',
+        view: () => import("@/views/management/winloseMonth.vue"),
+        meta: {
+          title: 'winlose_by_month',
+          i18nKey: 'winlose_by_month',
+          icon: 'fa6-solid:chart-line',
+          order: 3,
+          keepAlive: true,
+          pageId: ACCESS_PAGES.winlose
+        }
       }
     ]
   }
