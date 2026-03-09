@@ -21,6 +21,14 @@
         />
       </n-form-item>
 
+      <n-form-item :label="$t('code')" path="code" required>
+        <n-input
+          v-model:value="localFormData.code"
+          :placeholder="$t('please_input')"
+          clearable
+        />
+      </n-form-item>
+
       <n-form-item :label="$t('name')" path="name" required>
         <n-input
           v-model:value="localFormData.name"
@@ -71,7 +79,7 @@ const isVisibleModel = computed({
 const loadingStore = useSubmitLoadingStore();
 
 const handleSave = () => {
-  if (!localFormData.brandId || !localFormData.name) {
+  if (!localFormData.brandId || !localFormData.code || !localFormData.name) {
     window.$message?.error(t("please_fill_in_all_required_fields"));
     return;
   }
