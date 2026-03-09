@@ -298,7 +298,8 @@
     "openingBalance": "Opening Balance",
     "wrongTransfer": "Wrong Transfer",
     "unclaim": "Unclaim",
-    "other": "Other"
+    "other": "Other",
+    "claim": "Claim"
   },
   "zh_CN": {
     "${homeRouteName}": "${homeRouteName}",
@@ -599,6 +600,7 @@
     "openingBalance": "期初余额",
     "wrongTransfer": "错误转账",
     "unclaim": "未认领",
-    "other": "其他"
+    "other": "其他",
+    "claim": "认领"
   }
 }

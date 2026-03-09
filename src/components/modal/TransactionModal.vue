@@ -24,7 +24,7 @@
       <n-form-item :label="$t('type')" path="typeId" required>
         <n-select
           v-model:value="localFormData.typeId"
-          :options="filteredTransactionTypeOptions"
+          :options="transactionTypeOptions"
           :placeholder="$t('please_select')"
           filterable
           clearable
@@ -197,12 +197,6 @@ const {
   getTransactionTypeOptions,
 } = useDropdown();
 
-const filteredTransactionTypeOptions = computed(() =>
-  (transactionTypeOptions.value || []).filter((opt) =>
-    authStore.hasFeatureAccess(opt.value)
-  )
-);
-
 const bankOptionsLocal = ref([]);
 const memberOptionsLocal = ref([]);
 const counterPartyOptionsLocal = ref([]);
@@ -227,18 +221,6 @@ watch(
   () => props.formData,
   (v) => {
     Object.assign(localFormData, v || {});
-  },
-  { immediate: true }
-);
-
-watch(
-  filteredTransactionTypeOptions,
-  (opts) => {
-    if (!opts || opts.length === 0) return;
-    const allowedIds = opts.map((o) => o.value);
-    if (!allowedIds.includes(currentTypeId.value)) {
-      localFormData.typeId = allowedIds[0];
-    }
   },
   { immediate: true }
 );
@@ -302,16 +284,16 @@ const currentTypeId = computed(() =>
     : Number(localFormData.typeId || 0)
 );
 
-// bankId: required for deposit, withdrawal, borrow, repay, paymentGatewayCharge, adjustmentIn, adjustmentOut, openingBalance, wrongTransfer, unclaim, other
+// bankId: required for deposit, withdrawal, borrow, repay, paymentGatewayCharge, adjustmentIn, adjustmentOut, openingBalance, wrongTransfer, unclaim, other, claim
 const showBankId = computed(() =>
-  [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12].includes(currentTypeId.value)
+  [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13].includes(currentTypeId.value)
 );
 // fromBankId, toBankId: required for transfer only
 const showFromBank = computed(() => currentTypeId.value === 5);
 const showToBank = computed(() => currentTypeId.value === 5);
-// memberId: required deposit, withdrawal; optional adjustmentIn, adjustmentOut
+// memberId: required deposit, withdrawal; optional adjustmentIn, adjustmentOut, claim
 const showMemberId = computed(() =>
-  [1, 2, 7, 8].includes(currentTypeId.value)
+  [1, 2, 7, 8, 13].includes(currentTypeId.value)
 );
 const requireMemberId = computed(() =>
   [1, 2].includes(currentTypeId.value)
@@ -322,7 +304,7 @@ const showCounterPartyId = computed(() =>
 );
 // amount: required for all except transfer (which uses transferOutAmount/transferInAmount)
 const showAmount = computed(() =>
-  [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12].includes(currentTypeId.value)
+  [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13].includes(currentTypeId.value)
 );
 const showTransferOutAmount = computed(() => currentTypeId.value === 5);
 const showTransferInAmount = computed(() => currentTypeId.value === 5);
@@ -352,6 +334,7 @@ const requiredFieldsByType = {
   10: ["brandId", "typeId", "bankId", "amount"], // wrongTransfer
   11: ["brandId", "typeId", "bankId", "amount"], // unclaim
   12: ["brandId", "typeId", "bankId", "amount"], // other
+  13: ["brandId", "typeId", "bankId", "amount"], // claim
 };
 
 const handleSave = () => {

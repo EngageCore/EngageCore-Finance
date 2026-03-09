@@ -11,6 +11,7 @@ export const transactionTypeEnum = Object.freeze({
     wrongTransfer: { id: 10, name: 'wrongTransfer' },
     unclaim: { id: 11, name: 'unclaim' },
     other: { id: 12, name: 'other' },
+    claim: { id: 13, name: 'claim' },
 });
   
 export const getTransactionTypeNameById = (id) => {
