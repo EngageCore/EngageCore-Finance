@@ -16,7 +16,7 @@
           v-model:value="localFormData.brandId"
           :options="brandOptions"
           :placeholder="$t('please_select')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -42,7 +42,7 @@
           v-model:value="localFormData.typeId"
           :options="counterPartyTypeOptions"
           :placeholder="$t('please_select')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -52,7 +52,7 @@
           v-model:value="localFormData.statusId"
           :options="counterPartyStatusOptions"
           :placeholder="$t('please_select')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>

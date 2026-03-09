@@ -6,7 +6,7 @@
       </n-form-item>
 
       <n-form-item :label="$t('status')" path="statusId" v-if="isEdit">
-        <n-select v-model:value="localFormData.statusId" :options="roleStatusOptions" :placeholder="$t('please_select')" searchable clearable />
+        <n-select v-model:value="localFormData.statusId" :options="roleStatusOptions" :placeholder="$t('please_select')" filterable clearable />
       </n-form-item>
 
       <n-form-item :label="$t('permissions')" path="accessPageIds">

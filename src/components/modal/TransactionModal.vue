@@ -16,7 +16,7 @@
           v-model:value="localFormData.brandId"
           :options="brandOptions"
           :placeholder="$t('please_select')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -26,7 +26,7 @@
           v-model:value="localFormData.typeId"
           :options="filteredTransactionTypeOptions"
           :placeholder="$t('please_select')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -41,7 +41,7 @@
           v-model:value="localFormData.bankId"
           :options="bankOptionsLocal"
           :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -56,7 +56,7 @@
           v-model:value="localFormData.fromBankId"
           :options="bankOptionsLocal"
           :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"  
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -71,7 +71,7 @@
           v-model:value="localFormData.toBankId"
           :options="bankOptionsLocal"
           :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -86,7 +86,7 @@
           v-model:value="localFormData.memberId"
           :options="memberOptionsLocal"
           :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>
@@ -101,7 +101,7 @@
           v-model:value="localFormData.counterPartyId"
           :options="counterPartyOptionsLocal"
           :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"
-          searchable
+          filterable
           clearable
         />
       </n-form-item>

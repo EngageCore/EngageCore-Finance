@@ -133,7 +133,7 @@ export function useDropdown() {
   const getBrandOptions = async (includeAll = true, disableInactive = false) => {
     const resp = await callApi('/brand', 'GET');
     let options = resp.brandList.map(item => ({
-      label: item.name,
+      label: `(${item.code}) ${item.name}`,
       value: item.id,
       disabled: disableInactive && item.statusId === 2
     }));
@@ -151,7 +151,7 @@ export function useDropdown() {
   const getBankProviderOptions = async (includeAll = true, disableInactive = false) => {
     const resp = await callApi('/bankProvider', 'GET');
     let options = (resp.bankProviderList || []).map(item => ({
-      label: item.name,
+      label: `(${item.code}) ${item.name}`,
       value: item.id,
       disabled: disableInactive && item.statusId === 2
     }));
@@ -237,7 +237,7 @@ export function useDropdown() {
   const getCounterPartyOptions = async (includeAll = true) => {
     const resp = await callApi('/counterParty', 'GET');
     let options = (resp.counterPartyList || []).map(item => ({
-      label: item.name,
+      label: `(${item.code}) ${item.name}`,
       value: item.id
     }));
 
