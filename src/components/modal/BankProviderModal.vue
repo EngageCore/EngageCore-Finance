@@ -32,6 +32,7 @@
           v-model:value="localFormData.statusId"
           :options="roleStatusOptions"
           :placeholder="$t('please_select')"
+          searchable
           clearable
         />
       </n-form-item>

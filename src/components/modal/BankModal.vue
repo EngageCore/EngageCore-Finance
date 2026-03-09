@@ -16,6 +16,7 @@
           v-model:value="localFormData.brandId"
           :options="brandOptions"
           :placeholder="$t('please_select')"
+          searchable
           clearable
         />
       </n-form-item>
@@ -25,6 +26,7 @@
           v-model:value="localFormData.bankProviderId"
           :options="bankProviderOptions"
           :placeholder="$t('please_select')"
+          searchable
           clearable
         />
       </n-form-item>

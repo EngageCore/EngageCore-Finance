@@ -10,7 +10,7 @@
       </n-form-item>
 
       <n-form-item :label="$t('status')" path="statusId" v-if="isEdit">
-        <n-select v-model:value="localFormData.statusId" :options="brandStatusOptions" :placeholder="$t('please_select')" clearable />
+        <n-select v-model:value="localFormData.statusId" :options="brandStatusOptions" :placeholder="$t('please_select')" searchable clearable />
       </n-form-item>
     </n-form>
   </ReusableSingleModal>

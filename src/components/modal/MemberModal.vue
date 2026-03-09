@@ -16,6 +16,7 @@
           v-model:value="localFormData.brandId"
           :options="brandOptions"
           :placeholder="$t('please_select')"
+          searchable
           clearable
         />
       </n-form-item>

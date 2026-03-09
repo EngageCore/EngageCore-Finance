@@ -52,6 +52,7 @@
                       :options="field.options"
                       :loading="field.loading"
                       :placeholder="$t('select_an_option')"
+                      searchable
                       :filterable="!!field.isDynamic"
                       :remote="!!field.isDynamic"
                       @search="field.isDynamic ? handleRemoteSearch(field, $event) : null"
@@ -63,6 +64,7 @@
                       v-model:value="formData[getFieldKey(field)]"
                       clearable
                       multiple
+                      searchable
                       :options="field.options"
                       :placeholder="$t('select_an_option')"
                     />
