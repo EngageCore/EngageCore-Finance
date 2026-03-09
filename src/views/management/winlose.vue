@@ -12,9 +12,12 @@
     :headers="tableHeaders"
     :data="tableData"
     :loading="loading"
+    :showExport="canListWinlose"
+    :exportLoading="exportLoading"
     bordered
     striped
     :pagination="false"
+    @export="handleExport"
   >
     <template #date="{ row }">
       {{ row.date ? formatDate(row.date) : "-" }}
@@ -36,8 +39,9 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
-import { formatAmount, formatDate, convertToUTC } from "@/utils/common";
+import { formatAmount, formatDate } from "@/utils/common";
 import { useApiError } from "@/composables/useApiError";
+import { exportService } from "@/services/exportService";
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -94,6 +98,7 @@ const handleReset = () => {
 
 //#region TABLE
 const loading = ref(true);
+const exportLoading = ref(false);
 const tableData = ref([]);
 const totalRows = ref(0);
 const tableHeaders = ref([
@@ -106,34 +111,75 @@ const tableHeaders = ref([
   { label: "total_winlose", key: "totalWinlose", sortable: false },
 ]);
 
-const fetchWinlose = async () => {
+const buildParams = () => {
+  const rawParams = {};
+
+  Object.keys(initialData).forEach((key) => {
+    if (initialData[key]) {
+      rawParams[key] = initialData[key];
+    }
+  });
+
+  const { limit, offset, ...params } = rawParams;
+  void limit;
+  void offset;
+  return params;
+};
+
+const fetchWinlose = async ({ isExport = false } = {}) => {
   try {
-    loading.value = true;
-    
-    const params = {
+    if (!isExport) {
+      loading.value = true;
     }
 
-    Object.keys(initialData).forEach(key => {
-      if (initialData[key]) {
-        params[key] = initialData[key];
-      }
-    });
+    const params = buildParams();
 
     if (!canListWinlose.value) {
-      tableData.value = [];
-      totalRows.value = 0;
-      return;
+      if (!isExport) {
+        tableData.value = [];
+        totalRows.value = 0;
+      }
+      return [];
     }
 
     const resp = await callApi("/report/winlose", "GET", null, params);
     if (resp) {
-      tableData.value = resp.list;
-      totalRows.value = resp.count;
+      if (isExport) {
+        return resp.list || [];
+      }
+
+      tableData.value = resp.list || [];
+      totalRows.value = resp.count || 0;
     }
+    return [];
+  } catch (error) {
+    handleApiError(error);
+    return [];
+  } finally {
+    if (!isExport) {
+      loading.value = false;
+    }
+  }
+};
+
+const handleExport = async () => {
+  try {
+    exportLoading.value = true;
+    const exportData = await fetchWinlose({ isExport: true });
+    await exportService.export(exportData, tableHeaders.value, {
+      filename: "winlose",
+      type: "xlsx",
+      labelResolver: (label) => t(label),
+      valueResolver: (value, row, header) => {
+        if (header.key === "date") return row.date ? formatDate(row.date) : "-";
+        if (["totalDeposit", "totalWithdrawal", "totalWinlose"].includes(header.key)) return formatAmount(value);
+        return value;
+      }
+    });
   } catch (error) {
     handleApiError(error);
   } finally {
-    loading.value = false;
+    exportLoading.value = false;
   }
 };
 

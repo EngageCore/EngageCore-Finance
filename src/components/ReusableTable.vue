@@ -15,7 +15,19 @@
 
         <!-- ✅ Header Right: 右边内容 -->
         <template #header-extra>
-          <slot name="header-right"></slot>
+          <div class="flex items-center gap-2">
+            <n-button
+              v-if="showExport"
+              size="small"
+              type="primary"
+              ghost
+              :loading="exportLoading"
+              @click="emit('export')"
+            >
+              {{ $t(exportLabel) }}
+            </n-button>
+            <slot name="header-right"></slot>
+          </div>
         </template>
 
         <!-- Description -->
@@ -58,7 +70,7 @@
 
       <!-- When showCard is false, render only the bare table + pagination + footer -->
       <div v-else>
-        <div v-if="title || description || $slots['header-right']" class="mb-2 flex items-center justify-between">
+        <div v-if="title || description || $slots['header-right'] || showExport" class="mb-2 flex items-center justify-between">
           <div>
             <div v-if="title" class="font-semibold text-sm">
               {{ $t(title) }}
@@ -67,7 +79,17 @@
               {{ $t(description) }}
             </div>
           </div>
-          <div>
+          <div class="flex items-center gap-2">
+            <n-button
+              v-if="showExport"
+              size="small"
+              type="primary"
+              ghost
+              :loading="exportLoading"
+              @click="emit('export')"
+            >
+              {{ $t(exportLabel) }}
+            </n-button>
             <slot name="header-right"></slot>
           </div>
         </div>
@@ -109,7 +131,7 @@
 <script setup>
 import { ref, computed, watch, useSlots } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NCard, NText, NDataTable, NPagination } from 'naive-ui'
+import { NButton, NCard, NText, NDataTable, NPagination } from 'naive-ui'
 
 const { t } = useI18n()
 const slots = useSlots()
@@ -129,10 +151,13 @@ const props = defineProps({
   pagination: { type: Boolean, default: true },
   removePadding: { type: Boolean, default: false },
   /** When false, renders only the bare table (no outer card box) */
-  showCard: { type: Boolean, default: true }
+  showCard: { type: Boolean, default: true },
+  showExport: { type: Boolean, default: false },
+  exportLoading: { type: Boolean, default: false },
+  exportLabel: { type: String, default: 'common.export' }
 })
 
-const emit = defineEmits(['sort', 'pagination'])
+const emit = defineEmits(['sort', 'pagination', 'export'])
 
 //#region Pagination
 const pagination = ref({
