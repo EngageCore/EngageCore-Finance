@@ -158,6 +158,14 @@
         />
       </n-form-item>
 
+      <n-form-item :label="$t('referenceCode')" path="referenceCode">
+        <n-input
+          v-model:value="localFormData.referenceCode"
+          :placeholder="$t('please_input')"
+          clearable
+        />
+      </n-form-item>
+
       <n-form-item :label="$t('remark')" path="remark">
         <n-input
           v-model:value="localFormData.remark"

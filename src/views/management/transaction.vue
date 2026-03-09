@@ -48,6 +48,10 @@
       {{ row.rate || '-' }}
     </template>
 
+    <template #referenceCode="{ row }">
+      {{ row.referenceCode || '-' }}
+    </template>
+
     <template #remark="{ row }">
       {{ row.remark || '-' }}
     </template>
@@ -154,6 +158,7 @@ const tableHeaders = ref([
   { label: "debit", key: "debit", sortable: false },
   { label: "credit", key: "credit", sortable: false },
   { label: "rate", key: "rate", sortable: false },
+  { label: "referenceCode", key: "referenceCode", sortable: false },
   { label: "remark", key: "remark", sortable: false },
   { label: "created_at", key: "createdAt", sortable: false },
 ]);
