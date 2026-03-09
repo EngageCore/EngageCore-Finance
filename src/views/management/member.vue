@@ -158,6 +158,7 @@ const filteredTableHeaders = computed(() => {
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
   { label: "brand", key: "brandName", sortable: false },
+  { label: "code", key: "code", sortable: false },
   { label: "name", key: "name", sortable: false },
   { label: "created_at", key: "createdAt", sortable: false },
 ]);
