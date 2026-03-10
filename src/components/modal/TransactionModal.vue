@@ -24,7 +24,7 @@
       <n-form-item :label="$t('type')" path="typeId" required>
         <n-select
           v-model:value="localFormData.typeId"
-          :options="transactionTypeOptions"
+          :options="filteredTransactionTypeOptions"
           :placeholder="$t('please_select')"
           filterable
           clearable
@@ -197,6 +197,12 @@ const {
   getTransactionTypeOptions,
 } = useDropdown();
 
+const filteredTransactionTypeOptions = computed(() =>
+  (transactionTypeOptions.value || []).filter((opt) =>
+    authStore.hasFeatureAccess(opt.value)
+  )
+);
+
 const bankOptionsLocal = ref([]);
 const memberOptionsLocal = ref([]);
 const counterPartyOptionsLocal = ref([]);
@@ -221,6 +227,18 @@ watch(
   () => props.formData,
   (v) => {
     Object.assign(localFormData, v || {});
+  },
+  { immediate: true }
+);
+
+watch(
+  filteredTransactionTypeOptions,
+  (opts) => {
+    if (!opts || opts.length === 0) return;
+    const allowedIds = opts.map((o) => o.value);
+    if (!allowedIds.includes(currentTypeId.value)) {
+      localFormData.typeId = allowedIds[0];
+    }
   },
   { immediate: true }
 );

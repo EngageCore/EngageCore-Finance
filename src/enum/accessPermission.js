@@ -71,6 +71,7 @@ export const ACCESS_FEATURES = Object.freeze({
   wrongTransfer: TRANSACTION_TYPES.wrongTransfer.id,
   unclaim: TRANSACTION_TYPES.unclaim.id,
   other: TRANSACTION_TYPES.other.id,
+  claim: TRANSACTION_TYPES.claim.id,
 });
 
 export const ACCESS_FEATURE_ID_SET = new Set(Object.values(ACCESS_FEATURES));
