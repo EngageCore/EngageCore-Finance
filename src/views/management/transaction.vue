@@ -24,6 +24,23 @@
       {{ t(getTransactionTypeNameById(row.typeId)) }}
     </template>
 
+    <template #bankProviderName="{ row }">
+      <n-button
+        v-if="row.isMultiBank"
+        quaternary
+        tertiary
+        type="primary"
+        size="small"
+        class="!px-0"
+        @click="openTransactionDetails(row)"
+      >
+        {{ row.bankProviderName || "-" }}
+      </n-button>
+      <span v-else>
+        {{ row.bankProviderName || "-" }}
+      </span>
+    </template>
+
     <template #debit="{ row }">
       {{ row.debit ? formatAmount(row.debit) : '-' }}
     </template>
@@ -66,6 +83,33 @@
     @save="handleSave"
     @close="closeModal"
   />
+
+  <n-modal
+    v-model:show="isTransactionDetailsModalVisible"
+    preset="dialog"
+    :title="$t('transaction_details')"
+  >
+    <div class="flex flex-col gap-3">
+      <div
+        v-for="(detail, idx) in transactionDetails"
+        :key="idx"
+        class="border border-gray-200 rounded-md px-3 py-2"
+      >
+        <div class="font-medium">
+          {{ detail.bankProviderName || "-" }}
+        </div>
+        <div class="text-sm text-gray-600">
+          {{ detail.bankAccountName || "-" }} ({{ detail.bankAccountNumber || "-" }})
+        </div>
+        <div class="text-sm font-semibold">
+          {{ formatAmount(detail.amount) }}
+        </div>
+      </div>
+      <div v-if="!transactionDetails?.length" class="text-sm text-gray-500">
+        {{ $t('no_data') }}
+      </div>
+    </div>
+  </n-modal>
 </template>
 
 <script setup>
@@ -82,6 +126,7 @@ import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ACCESS_ACTIONS } from "@/enum/accessPermission";
+import { NButton, NModal } from "naive-ui";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
@@ -256,6 +301,16 @@ const handleSave = async (submitData) => {
   } finally {
     loadingStore.endSubmit();
   }
+};
+//#endregion
+
+//#region Transaction Details Modal (multi-bank)
+const isTransactionDetailsModalVisible = ref(false);
+const transactionDetails = ref([]);
+
+const openTransactionDetails = (row) => {
+  transactionDetails.value = row?.transactionDetails || [];
+  isTransactionDetailsModalVisible.value = true;
 };
 //#endregion
 </script>
