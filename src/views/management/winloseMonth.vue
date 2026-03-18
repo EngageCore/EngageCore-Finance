@@ -103,7 +103,6 @@ const tableData = ref([]);
 const totalRows = ref(0);
 const tableHeaders = ref([
   { label: "date", key: "month", sortable: false },
-  { label: "brand", key: "brandName", sortable: false },
   { label: "total_deposit_count", key: "totalDepositCount", sortable: false },
   { label: "total_withdrawal_count", key: "totalWithdrawalCount", sortable: false },
   { label: "total_deposit", key: "totalDeposit", sortable: false },
