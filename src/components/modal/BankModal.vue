@@ -11,16 +11,6 @@
       label-placement="top"
       class="grid grid-cols-1 gap-3 mt-2"
     >
-      <n-form-item :label="$t('brand')" path="brandId" required>
-        <n-select
-          v-model:value="localFormData.brandId"
-          :options="brandOptions"
-          :placeholder="$t('please_select')"
-          filterable
-          clearable
-        />
-      </n-form-item>
-
       <n-form-item :label="$t('bankProvider')" path="bankProviderId" required>
         <n-select
           v-model:value="localFormData.bankProviderId"
@@ -79,7 +69,7 @@ import ReusableSingleModal from "@/components/ReusableSingleModal.vue";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 
 const { t } = useI18n();
-const { brandOptions, getBrandOptions, bankProviderOptions, getBankProviderOptions } = useDropdown();
+const { bankProviderOptions, getBankProviderOptions } = useDropdown();
 
 const props = defineProps({
   isVisible: Boolean,
@@ -91,7 +81,6 @@ const props = defineProps({
 const emit = defineEmits(["close", "update:formData", "save"]);
 
 onMounted(() => {
-  getBrandOptions(false, true);
   getBankProviderOptions(false, true);
 });
 
@@ -112,7 +101,6 @@ const loadingStore = useSubmitLoadingStore();
 
 const handleSave = () => {
   if (
-    !localFormData.brandId ||
     !localFormData.bankProviderId ||
     !localFormData.accountName ||
     !localFormData.accountNumber ||

@@ -11,16 +11,6 @@
       label-placement="top"
       class="grid grid-cols-1 gap-3 mt-2"
     >
-      <n-form-item :label="$t('brand')" path="brandId" required>
-        <n-select
-          v-model:value="localFormData.brandId"
-          :options="brandOptions"
-          :placeholder="$t('please_select')"
-          filterable
-          clearable
-        />
-      </n-form-item>
-
       <n-form-item :label="$t('code')" path="code" required>
         <n-input
           v-model:value="localFormData.code"
@@ -81,7 +71,6 @@ const emit = defineEmits(["close", "update:formData", "save"]);
 
 onMounted(() => {
   getCounterPartyTypeOptions(false);
-  getBrandOptions(false, true);
   getCounterPartyStatusOptions(false);
 });
 
@@ -102,7 +91,6 @@ const loadingStore = useSubmitLoadingStore();
 
 const handleSave = () => {
   if (
-    !localFormData.brandId ||
     !localFormData.name ||
     !localFormData.code ||
     !localFormData.typeId

@@ -96,16 +96,9 @@ const canEditBank = computed(() =>
 );
 
 //#region FORM
-const { brandOptions, getBrandOptions, bankProviderOptions, getBankProviderOptions } = useDropdown();
+const { bankProviderOptions, getBankProviderOptions } = useDropdown();
 
 const fields = ref([
-  {
-    id: "brandId",
-    label: "brand",
-    type: "select",
-    options: brandOptions,
-    colClass: "col-span-12 lg:col-span-3",
-  },
   {
     id: "bankProviderId",
     label: "bankProvider",
@@ -128,7 +121,6 @@ const fields = ref([
 ]);
 
 const initialData = reactive({
-  brandId: 0,
   bankProviderId: 0,
   accountName: "",
   accountNumber: "",
@@ -156,7 +148,6 @@ const handleReset = () => {
 };
 
 onMounted(() => {
-  getBrandOptions(true);
   getBankProviderOptions(true);
 });
 //#endregion
@@ -179,7 +170,6 @@ const filteredTableHeaders = computed(() => {
 
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
-  { label: "brand", key: "brandName", sortable: false },
   { label: "bankProvider", key: "bankProviderName", sortable: false },
   { label: "account_name", key: "accountName", sortable: false },
   { label: "account_number", key: "accountNumber", sortable: false },
@@ -248,7 +238,6 @@ const isEdit = ref(false);
 const resetFormData = () => {
   Object.keys(formData).forEach((key) => delete formData[key]);
   Object.assign(formData, {
-    brandId: null,
     bankProviderId: null,
     accountName: "",
     accountNumber: "",
