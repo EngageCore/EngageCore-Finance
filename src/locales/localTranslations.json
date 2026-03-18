@@ -305,7 +305,8 @@
     "wrongTransfer": "Wrong Transfer",
     "unclaim": "Unclaim",
     "other": "Other",
-    "claim": "Claim"
+    "claim": "Claim",
+    "balanceWithdraw": "Balance Withdraw"
   },
   "zh_CN": {
     "${homeRouteName}": "${homeRouteName}",
@@ -613,6 +614,7 @@
     "wrongTransfer": "错误转账",
     "unclaim": "未认领",
     "other": "其他",
-    "claim": "认领"
+    "claim": "认领",
+    "balanceWithdraw": "余额提款"
   }
 }
