@@ -58,7 +58,7 @@
         />
       </n-form-item>
 
-      <n-form-item :label="$t('is_counter_party')" path="isCounterParty">
+      <n-form-item :label="$t('thirdParty')" path="isCounterParty">
         <n-switch v-model:value="localFormData.isCounterParty" />
       </n-form-item>
     </n-form>

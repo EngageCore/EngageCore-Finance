@@ -177,7 +177,7 @@ const fields = computed(() => [
   },
   {
     id: "isCounterParty",
-    label: "is_counter_party",
+    label: "thirdParty",
     type: "select",
     options: isCounterPartyFilterOptions.value,
     colClass: "col-span-12 lg:col-span-3",
