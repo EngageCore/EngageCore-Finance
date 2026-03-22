@@ -53,7 +53,7 @@ const { handleApiError } = useApiError();
 const { brandOptions, getBrandOptions } = useDropdown();
 const authStore = useAuthStore();
 const canListWinlose = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listWinlose)
+  authStore.hasActionAccess(ACCESS_ACTIONS.listWinlose)
 );
 
 //#region FORM

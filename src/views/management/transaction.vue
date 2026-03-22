@@ -153,10 +153,10 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 const authStore = useAuthStore();
 const canAddTransaction = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addTransaction)
+  authStore.hasActionAccess(ACCESS_ACTIONS.addTransaction)
 );
 const canDeleteTransaction = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.deleteTransaction)
+  authStore.hasActionAccess(ACCESS_ACTIONS.deleteTransaction)
 );
 
 //#region FORM

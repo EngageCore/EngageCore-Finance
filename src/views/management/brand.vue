@@ -75,13 +75,13 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 const authStore = useAuthStore();
 const canListBrand = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listBrand)
+  authStore.hasActionAccess(ACCESS_ACTIONS.listBrand)
 );
 const canAddBrand = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addBrand)
+  authStore.hasActionAccess(ACCESS_ACTIONS.addBrand)
 );
 const canEditBrand = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateBrand)
+  authStore.hasActionAccess(ACCESS_ACTIONS.updateBrand)
 );
 
 //#region FORM

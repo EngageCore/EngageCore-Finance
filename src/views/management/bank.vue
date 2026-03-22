@@ -146,16 +146,16 @@ const { handleApiError } = useApiError();
 
 const authStore = useAuthStore();
 const canListBank = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listBank)
+  authStore.hasActionAccess(ACCESS_ACTIONS.listBank)
 );
 const canAddBank = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addBank)
+  authStore.hasActionAccess(ACCESS_ACTIONS.addBank)
 );
 const canEditBank = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateBank)
+  authStore.hasActionAccess(ACCESS_ACTIONS.updateBank)
 );
 const canDeleteBank = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.deleteBank)
+  authStore.hasActionAccess(ACCESS_ACTIONS.deleteBank)
 );
 
 //#region FORM

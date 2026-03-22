@@ -73,13 +73,13 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 const authStore = useAuthStore();
 const canListRole = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listRole)
+  authStore.hasActionAccess(ACCESS_ACTIONS.listRole)
 );
 const canAddRole = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addRole)
+  authStore.hasActionAccess(ACCESS_ACTIONS.addRole)
 );
 const canEditRole = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateRole)
+  authStore.hasActionAccess(ACCESS_ACTIONS.updateRole)
 );
 
 //#region Form

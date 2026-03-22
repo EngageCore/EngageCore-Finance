@@ -75,13 +75,13 @@ const { callApi } = useCallApi();
 const { handleApiError } = useApiError();
 const authStore = useAuthStore();
 const canListBankProvider = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.listBankProvider)
+  authStore.hasActionAccess(ACCESS_ACTIONS.listBankProvider)
 );
 const canAddBankProvider = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addBankProvider)
+  authStore.hasActionAccess(ACCESS_ACTIONS.addBankProvider)
 );
 const canEditBankProvider = computed(() =>
-  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.updateBankProvider)
+  authStore.hasActionAccess(ACCESS_ACTIONS.updateBankProvider)
 );
 
 //#region FORM
