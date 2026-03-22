@@ -11,12 +11,15 @@
     title="winlose_by_bank"
     :headers="tableHeaders"
     :data="tableData"
+    :offset="offset"
+    :limit="limit"
+    :totalRows="totalRows"
     :loading="loading"
     :showExport="canListWinlose"
     :exportLoading="exportLoading"
     bordered
     striped
-    :pagination="false"
+    @pagination="handlePaginate"
     @export="handleExport"
   >
     <template #date="{ row }">
@@ -97,6 +100,8 @@ const handleReset = () => {
 //#endregion
 
 //#region TABLE
+const offset = ref(0);
+const limit = ref(10);
 const loading = ref(true);
 const exportLoading = ref(false);
 const tableData = ref([]);
@@ -113,19 +118,20 @@ const tableHeaders = ref([
   { label: "total_winlose", key: "totalWinlose", sortable: false },
 ]);
 
-const buildParams = () => {
-  const rawParams = {};
-
+const buildFilterParams = () => {
+  const params = {};
   Object.keys(initialData).forEach((key) => {
     if (initialData[key]) {
-      rawParams[key] = initialData[key];
+      params[key] = initialData[key];
     }
   });
-
-  const { limit, offset, ...params } = rawParams;
-  void limit;
-  void offset;
   return params;
+};
+
+const handlePaginate = ({ offset: newOffset, limit: newLimit }) => {
+  offset.value = newOffset;
+  limit.value = newLimit;
+  fetchWinloseBank();
 };
 
 const fetchWinloseBank = async ({ isExport = false } = {}) => {
@@ -134,7 +140,10 @@ const fetchWinloseBank = async ({ isExport = false } = {}) => {
       loading.value = true;
     }
 
-    const params = buildParams();
+    const params = {
+      ...buildFilterParams(),
+      ...(isExport ? {} : { offset: offset.value, limit: limit.value }),
+    };
 
     if (!canListWinlose.value) {
       if (!isExport) {
