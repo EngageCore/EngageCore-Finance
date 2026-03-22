@@ -117,10 +117,9 @@ const PAGE_ACTION_KEYS = Object.freeze({
   user: ["listUser", "addUser", "updateUser"],
   brand: ["listBrand", "addBrand", "updateBrand"],
   bankProvider: ["listBankProvider", "addBankProvider", "updateBankProvider"],
-  counterParty: ["listCounterParty", "addCounterParty", "updateCounterParty"],
   member: ["listMember", "addMember", "updateMember"],
-  bank: ["listBank", "addBank", "updateBank"],
-  transaction: ["listTransaction", "addTransaction"],
+  bank: ["listBank", "addBank", "updateBank", "deleteBank"],
+  transaction: ["listTransaction", "addTransaction", "deleteTransaction"],
   winlose: ["listWinlose"],
 });
 
@@ -128,6 +127,7 @@ const getActionKind = (actionKey) => {
   if (actionKey.startsWith("list")) return "list";
   if (actionKey.startsWith("add")) return "add";
   if (actionKey.startsWith("update")) return "update";
+  if (actionKey.startsWith("delete")) return "delete";
   return "other";
 };
 
@@ -135,6 +135,7 @@ const getActionLabel = (kind) => {
   if (kind === "list") return t("view");
   if (kind === "add") return t("add");
   if (kind === "update") return t("edit");
+  if (kind === "delete") return t("delete");
   return kind;
 };
 
@@ -171,7 +172,7 @@ const permissionPagesByKey = computed(() =>
 
 const CATEGORY_PAGE_KEYS = Object.freeze({
   system: ["role", "user"],
-  master: ["brand", "bankProvider", "counterParty", "member", "bank"],
+  master: ["brand", "bankProvider", "member", "bank"],
   transaction: ["transaction"],
   report: ["winlose"],
 });

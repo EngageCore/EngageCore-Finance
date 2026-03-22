@@ -7,8 +7,6 @@ import { roleStatusEnum } from '@/enum/roleStatus';
 import { userStatusEnum } from '@/enum/userStatus';
 import { brandStatusEnum } from '@/enum/brandStatus';
 import { bankProviderStatusEnum } from '@/enum/bankProviderStatus';
-import { counterPartyTypeEnum } from '@/enum/counterPartyType';
-import { counterPartyStatusEnum } from '@/enum/counterPartyStatus';
 import { transactionTypeEnum } from '@/enum/transactionType';
 
 export function useDropdown() {
@@ -22,14 +20,11 @@ export function useDropdown() {
   const userStatusOptions = ref([]);
   const brandStatusOptions = ref([]);
   const bankProviderStatusOptions = ref([]);
-  const counterPartyTypeOptions = ref([]);
   const brandOptions = ref([]);
   const bankProviderOptions = ref([]);
-  const counterPartyStatusOptions = ref([]);
   const transactionTypeOptions = ref([]);
   const bankOptions = ref([]);
   const memberOptions = ref([]);
-  const counterPartyOptions = ref([]);
 
   const getRoleStatusOptions = async (includeAll = true) => {
     let options = Object.values(roleStatusEnum).map(item => ({
@@ -114,22 +109,6 @@ export function useDropdown() {
     bankProviderStatusOptions.value = options;
   }
 
-  const getCounterPartyTypeOptions = async (includeAll = true) => {
-    let options = Object.values(counterPartyTypeEnum).map(item => ({
-      label: t(item.name),
-      value: item.id
-    }));
-
-    if (includeAll) {
-      options.unshift({
-        label: t('all'),
-        value: 0
-      });
-    }
-
-    counterPartyTypeOptions.value = options;
-  }
-
   const getBrandOptions = async (includeAll = true, disableInactive = false) => {
     const resp = await callApi('/brand', 'GET');
     let options = resp.brandList.map(item => ({
@@ -164,22 +143,6 @@ export function useDropdown() {
     }
 
     bankProviderOptions.value = options;
-  }
-
-  const getCounterPartyStatusOptions = async (includeAll = true) => {
-    let options = Object.values(counterPartyStatusEnum).map(item => ({
-      label: t(item.name),
-      value: item.id
-    }));
-
-    if (includeAll) {
-      options.unshift({
-        label: t('all'),
-        value: 0
-      });
-    }
-
-    counterPartyStatusOptions.value = options;
   }
 
   const getTransactionTypeOptions = async (includeAll = true) => {
@@ -234,23 +197,6 @@ export function useDropdown() {
     memberOptions.value = options;
   }
 
-  const getCounterPartyOptions = async (includeAll = true) => {
-    const resp = await callApi('/counterParty', 'GET');
-    let options = (resp.counterPartyList || []).map(item => ({
-      label: `(${item.code}) ${item.name}`,
-      value: item.id
-    }));
-
-    if (includeAll) {
-      options.unshift({
-        label: t('all'),
-        value: 0
-      });
-    }
-
-    counterPartyOptions.value = options;
-  }
-
   return {
     roleStatusOptions,
     getRoleStatusOptions,
@@ -262,21 +208,15 @@ export function useDropdown() {
     getBrandStatusOptions,
     bankProviderStatusOptions,
     getBankProviderStatusOptions,
-    counterPartyTypeOptions,
-    getCounterPartyTypeOptions,
     brandOptions,
     getBrandOptions,
     bankProviderOptions,
     getBankProviderOptions,
-    counterPartyStatusOptions,
-    getCounterPartyStatusOptions,
     transactionTypeOptions,
     getTransactionTypeOptions,
     bankOptions,
     getBankOptions,
     memberOptions,
     getMemberOptions,
-    counterPartyOptions,
-    getCounterPartyOptions,
   };
 }

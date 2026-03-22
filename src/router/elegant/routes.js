@@ -5,7 +5,7 @@
 // Custom Module Routes (grouped by type for sidebar)
 //
 // - system: 系统设置 (role, user)
-// - master: 主数据 (brand, bankProvider, counterParty, member, bank)
+// - master: 主数据 (brand, bankProvider, member, bank)
 // - transaction: 交易 (transaction)
 // - report: 报表 (winlose)
 // =====================
@@ -53,7 +53,7 @@ export const customModuleRoutes = [
       }
     ]
   },
-  // 主数据 - Brand, BankProvider, CounterParty, Member, Bank
+  // 主数据 - Brand, BankProvider, Member, Bank
   {
     name: 'master',
     path: '/master',
@@ -92,19 +92,6 @@ export const customModuleRoutes = [
         }
       },
       {
-        name: 'master_counterParty',
-        path: 'counter-party',
-        view: () => import("@/views/management/counterParty.vue"),
-        meta: {
-          title: 'counterParty',
-          i18nKey: 'counterParty',
-          icon: 'fa6-solid:handshake',
-          order: 3,
-          keepAlive: true,
-          pageId: ACCESS_PAGES.counterParty
-        }
-      },
-      {
         name: 'master_member',
         path: 'member',
         view: () => import("@/views/management/member.vue"),
@@ -112,7 +99,7 @@ export const customModuleRoutes = [
           title: 'member',
           i18nKey: 'member',
           icon: 'fa6-solid:users',
-          order: 4,
+          order: 3,
           keepAlive: true,
           pageId: ACCESS_PAGES.member
         }
@@ -125,7 +112,7 @@ export const customModuleRoutes = [
           title: 'bank',
           i18nKey: 'bank',
           icon: 'fa6-solid:wallet',
-          order: 5,
+          order: 4,
           keepAlive: true,
           pageId: ACCESS_PAGES.bank
         }

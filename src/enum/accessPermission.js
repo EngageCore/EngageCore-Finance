@@ -5,7 +5,6 @@ export const ACCESS_PAGES = Object.freeze({
   user: 2,
   brand: 3,
   bankProvider: 4,
-  counterParty: 5,
   member: 6,
   bank: 7,
   transaction: 8,
@@ -33,11 +32,6 @@ export const ACCESS_ACTIONS = Object.freeze({
   addBankProvider: 11,
   updateBankProvider: 12,
 
-  // Counter Party
-  listCounterParty: 13,
-  addCounterParty: 14,
-  updateCounterParty: 15,
-
   // Member
   listMember: 16,
   addMember: 17,
@@ -47,10 +41,12 @@ export const ACCESS_ACTIONS = Object.freeze({
   listBank: 19,
   addBank: 20,
   updateBank: 21,
+  deleteBank: 25,
 
   // Transaction
   listTransaction: 22,
   addTransaction: 23,
+  deleteTransaction: 26,
 
   // Winlose report
   listWinlose: 24,

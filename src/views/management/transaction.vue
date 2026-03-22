@@ -20,33 +20,63 @@
     @sort="handleSort"
     @pagination="handlePaginate"
   >
+    <template #action="{ row }">
+      <div class="flex justify-center items-center gap-2">
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button
+              circle
+              tertiary
+              type="primary"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="openTransactionDetails(row)"
+            >
+              <template #icon>
+                <n-icon class="text-lg">
+                  <EyeOutline />
+                </n-icon>
+              </template>
+            </n-button>
+          </template>
+          {{ $t("transaction_details") }}
+        </n-tooltip>
+        <n-tooltip v-if="canDeleteTransaction" trigger="hover">
+          <template #trigger>
+            <n-button
+              circle
+              tertiary
+              type="error"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="openDeleteConfirm(row)"
+            >
+              <template #icon>
+                <n-icon class="text-lg">
+                  <TrashOutline />
+                </n-icon>
+              </template>
+            </n-button>
+          </template>
+          {{ $t("delete") }}
+        </n-tooltip>
+      </div>
+    </template>
+
+    <template #brandName="{ row }">
+      {{ row.brandName || "-" }}
+    </template>
+
     <template #typeId="{ row }">
       {{ t(getTransactionTypeNameById(row.typeId)) }}
     </template>
 
-    <template #bankProviderName="{ row }">
-      <n-button
-        v-if="row.isMultiBank"
-        quaternary
-        tertiary
-        type="primary"
-        size="small"
-        class="!px-0"
-        @click="openTransactionDetails(row)"
-      >
-        {{ row.bankProviderName || "-" }}
-      </n-button>
-      <span v-else>
-        {{ row.bankProviderName || "-" }}
-      </span>
-    </template>
-
-    <template #debit="{ row }">
-      {{ row.debit ? formatAmount(row.debit) : '-' }}
-    </template>
-
-    <template #credit="{ row }">
-      {{ row.credit ? formatAmount(row.credit) : '-' }}
+    <template #amount="{ row }">
+      {{
+        row.amount != null && row.amount !== ""
+          ? formatAmount(row.amount)
+          : "-"
+      }}
     </template>
 
     <template #createdAt="{ row }">
@@ -55,10 +85,6 @@
 
     <template #memberName="{ row }">
       {{ row.memberName || '-' }}
-    </template>
-
-    <template #counterPartyName="{ row }">
-      {{ row.counterPartyName || '-' }}
     </template>
 
     <template #rate="{ row }">
@@ -88,26 +114,19 @@
     v-model:show="isTransactionDetailsModalVisible"
     preset="dialog"
     :title="$t('transaction_details')"
+    style="width: min(920px, 92vw)"
   >
-    <div class="flex flex-col gap-3">
-      <div
-        v-for="(detail, idx) in transactionDetails"
-        :key="idx"
-        class="border border-gray-200 rounded-md px-3 py-2"
-      >
-        <div class="font-medium">
-          {{ detail.bankProviderName || "-" }}
-        </div>
-        <div class="text-sm text-gray-600">
-          {{ detail.bankAccountName || "-" }} ({{ detail.bankAccountNumber || "-" }})
-        </div>
-        <div class="text-sm font-semibold">
-          {{ formatAmount(detail.amount) }}
-        </div>
-      </div>
-      <div v-if="!transactionDetails?.length" class="text-sm text-gray-500">
-        {{ $t('no_data') }}
-      </div>
+    <n-data-table
+      v-if="transactionDetails.length"
+      :columns="detailTableColumns"
+      :data="transactionDetails"
+      :bordered="true"
+      :single-line="false"
+      size="small"
+      class="mt-2"
+    />
+    <div v-else class="text-sm text-gray-500 py-6 text-center">
+      {{ $t("no_data") }}
     </div>
   </n-modal>
 </template>
@@ -116,7 +135,7 @@
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import TransactionModal from "@/components/modal/TransactionModal.vue";
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
@@ -126,7 +145,8 @@ import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ACCESS_ACTIONS } from "@/enum/accessPermission";
-import { NButton, NModal } from "naive-ui";
+import { EyeOutline, TrashOutline } from "@vicons/ionicons5";
+import { NButton, NDataTable, NIcon, NModal, NTooltip } from "naive-ui";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
@@ -135,10 +155,19 @@ const authStore = useAuthStore();
 const canAddTransaction = computed(() =>
   authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.addTransaction)
 );
+const canDeleteTransaction = computed(() =>
+  authStore.userInfo.accessActionIds.includes(ACCESS_ACTIONS.deleteTransaction)
+);
 
 //#region FORM
-const { brandOptions, getBrandOptions, transactionTypeOptions, getTransactionTypeOptions } =
-  useDropdown();
+const {
+  brandOptions,
+  getBrandOptions,
+  transactionTypeOptions,
+  getTransactionTypeOptions,
+  bankOptions,
+  getBankOptions,
+} = useDropdown();
 
 const fields = ref([
   {
@@ -155,11 +184,19 @@ const fields = ref([
     options: transactionTypeOptions,
     colClass: "col-span-12 lg:col-span-3",
   },
+  {
+    id: "bankId",
+    label: "bank",
+    type: "select",
+    options: bankOptions,
+    colClass: "col-span-12 lg:col-span-3",
+  },
 ]);
 
 const initialData = reactive({
   brandId: 0,
   typeId: 0,
+  bankId: 0,
 });
 
 const handleSearch = (formData) => {
@@ -175,9 +212,22 @@ const handleReset = () => {
   Object.assign(initialData, {
     brandId: 0,
     typeId: 0,
+    bankId: 0,
   });
   fetchTransactionList();
 };
+
+watch(
+  () => initialData.brandId,
+  async (bid) => {
+    if (bid) {
+      await getBankOptions(true, { brandId: bid });
+    } else {
+      await getBankOptions(true, {});
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   getBrandOptions(true);
@@ -193,15 +243,11 @@ const sortOrder = ref("desc");
 const totalRows = ref(0);
 
 const tableHeaders = ref([
+  { label: "action", key: "action", sortable: false },
   { label: "brand", key: "brandName", sortable: false },
-  { label: "bank", key: "bankProviderName", sortable: false },
-  { label: "account_name", key: "bankAccountName", sortable: false },
-  { label: "account_number", key: "bankAccountNumber", sortable: false },
   { label: "type", key: "typeId", sortable: false },
   { label: "member", key: "memberName", sortable: false },
-  { label: "counterParty", key: "counterPartyName", sortable: false },
-  { label: "debit", key: "debit", sortable: false },
-  { label: "credit", key: "credit", sortable: false },
+  { label: "amount", key: "amount", sortable: false },
   { label: "rate", key: "rate", sortable: false },
   { label: "referenceCode", key: "referenceCode", sortable: false },
   { label: "remark", key: "remark", sortable: false },
@@ -268,7 +314,6 @@ const resetFormData = () => {
     fromBankId: null,
     toBankId: null,
     memberId: null,
-    counterPartyId: null,
     amount: "",
     transferOutAmount: "",
     transferInAmount: "",
@@ -302,11 +347,85 @@ const handleSave = async (submitData) => {
     loadingStore.endSubmit();
   }
 };
+
+const isDeleteConfirmVisible = ref(false);
+const rowPendingDelete = ref(null);
+const deleteSubmitting = ref(false);
+
+const openDeleteConfirm = (row) => {
+  rowPendingDelete.value = row;
+  isDeleteConfirmVisible.value = true;
+};
+
+const closeDeleteConfirm = () => {
+  isDeleteConfirmVisible.value = false;
+  rowPendingDelete.value = null;
+};
+
+const confirmDeleteTransaction = async () => {
+  const row = rowPendingDelete.value;
+  if (!row?.id) return;
+  deleteSubmitting.value = true;
+  try {
+    await callApi(`/transaction/${row.id}`, "DELETE", null, null, false);
+    handleMessage(t("transaction_deleted"), "success");
+    closeDeleteConfirm();
+    fetchTransactionList();
+  } catch (error) {
+    handleApiError(error);
+  } finally {
+    deleteSubmitting.value = false;
+  }
+};
 //#endregion
 
 //#region Transaction Details Modal (multi-bank)
 const isTransactionDetailsModalVisible = ref(false);
 const transactionDetails = ref([]);
+
+const formatDetailDebit = (row) =>
+  row.debitAmount && Number(row.debitAmount) > 0
+    ? formatAmount(row.debitAmount)
+    : "-";
+
+const formatDetailCredit = (row) =>
+  row.creditAmount && Number(row.creditAmount) > 0
+    ? formatAmount(row.creditAmount)
+    : "-";
+
+const detailTableColumns = computed(() => [
+  {
+    title: t("bankProvider"),
+    key: "bankProviderName",
+    render: (row) => row.bankProviderName || "-",
+  },
+  {
+    title: t("account_name"),
+    key: "bankAccountName",
+    render: (row) => row.bankAccountName || "-",
+  },
+  {
+    title: t("account_number"),
+    key: "bankAccountNumber",
+    render: (row) => row.bankAccountNumber || "-",
+  },
+  {
+    title: t("thirdParty"),
+    key: "isCounterParty",
+    width: 100,
+    render: (row) => (row.isCounterParty ? t("yes") : t("no")),
+  },
+  {
+    title: t("debit"),
+    key: "debitAmount",
+    render: (row) => formatDetailDebit(row),
+  },
+  {
+    title: t("credit"),
+    key: "creditAmount",
+    render: (row) => formatDetailCredit(row),
+  },
+]);
 
 const openTransactionDetails = (row) => {
   transactionDetails.value = row?.transactionDetails || [];

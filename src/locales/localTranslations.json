@@ -167,6 +167,9 @@
     "amount": "Amount",
     "debit": "Debit",
     "credit": "Credit",
+    "yes": "Yes",
+    "no": "No",
+    "is_counter_party": "Counter party account",
     "rate": "Rate",
     "remark": "Remark",
     "referenceCode": "Reference Code",
@@ -211,7 +214,12 @@
     "member_updated": "Member Updated",
     "bank_created": "Bank Created",
     "bank_updated": "Bank Updated",
+    "bank_deleted": "Bank account deleted",
+    "delete_bank_confirm": "Are you sure you want to delete this bank account? This cannot be undone.",
+    "delete": "Delete",
     "transaction_created": "Transaction Created",
+    "transaction_deleted": "Transaction deleted",
+    "delete_transaction_confirm": "Are you sure you want to delete this transaction? This cannot be undone.",
     "status": "Status",
     "type": "Type",
     "action": "Action",
@@ -307,7 +315,8 @@
     "unclaim": "Unclaim",
     "other": "Other",
     "claim": "Claim",
-    "balanceWithdraw": "Balance Withdraw"
+    "balanceWithdraw": "Balance Withdraw",
+    "thirdParty": "Third Party"
   },
   "zh_CN": {
     "${homeRouteName}": "${homeRouteName}",
@@ -477,6 +486,9 @@
     "amount": "金额",
     "debit": "借方",
     "credit": "贷方",
+    "yes": "是",
+    "no": "否",
+    "is_counter_party": "对手方账户",
     "rate": "汇率",
     "remark": "备注",
     "referenceCode": "参考编号",
@@ -521,7 +533,12 @@
     "member_updated": "会员更新成功",
     "bank_created": "银行账户创建成功",
     "bank_updated": "银行账户更新成功",
+    "bank_deleted": "银行账户已删除",
+    "delete_bank_confirm": "确定要删除该银行账户吗？此操作无法撤销。",
+    "delete": "删除",
     "transaction_created": "交易创建成功",
+    "transaction_deleted": "交易已删除",
+    "delete_transaction_confirm": "确定要删除该笔交易吗？此操作无法撤销。",
     "status": "状态",
     "type": "类型",
     "action": "操作",
@@ -617,6 +634,7 @@
     "unclaim": "未认领",
     "other": "其他",
     "claim": "认领",
-    "balanceWithdraw": "余额提款"
+    "balanceWithdraw": "余额提款",
+    "thirdParty": "第三方"
   }
 }

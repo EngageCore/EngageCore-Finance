@@ -46,8 +46,8 @@
         />
       </n-form-item>
 
-      <!-- Withdrawal: multiple bank + amount rows -->
-      <div v-if="showWithdrawalBankDetails" class="flex flex-col gap-2">
+      <!-- Deposit / Withdrawal: multiple bank + amount rows (2+ rows → bankDetails; 1 row → bankId + amount) -->
+      <div v-if="showDepositWithdrawBankDetails" class="flex flex-col gap-2">
         <div
           v-for="(detail, idx) in localFormData.bankDetails"
           :key="idx"
@@ -75,14 +75,14 @@
               quaternary
               type="error"
               :disabled="(localFormData.bankDetails || []).length <= 1"
-              @click="removeWithdrawalRow(idx)"
+              @click="removeBankDetailRow(idx)"
             >
               -
             </n-button>
           </div>
         </div>
         <div class="flex justify-end">
-          <n-button size="small" tertiary type="primary" @click="addWithdrawalRow">
+          <n-button size="small" tertiary type="primary" @click="addBankDetailRow">
             {{ $t('add') }}
           </n-button>
         </div>
@@ -127,21 +127,6 @@
         <n-select
           v-model:value="localFormData.memberId"
           :options="memberOptionsLocal"
-          :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"
-          filterable
-          clearable
-        />
-      </n-form-item>
-
-      <n-form-item
-        v-if="showCounterPartyId"
-        :label="$t('counterParty')"
-        path="counterPartyId"
-        required
-      >
-        <n-select
-          v-model:value="localFormData.counterPartyId"
-          :options="counterPartyOptionsLocal"
           :placeholder="localFormData.brandId ? $t('please_select') : $t('please_select_brand_first')"
           filterable
           clearable
@@ -240,14 +225,13 @@ const {
 } = useDropdown();
 
 const filteredTransactionTypeOptions = computed(() =>
-  (transactionTypeOptions.value || []).filter((opt) =>
-    authStore.hasFeatureAccess(opt.value)
+  (transactionTypeOptions.value || []).filter(
+    (opt) => opt.value && opt.value !== 9 && authStore.hasFeatureAccess(opt.value)
   )
 );
 
 const bankOptionsLocal = ref([]);
 const memberOptionsLocal = ref([]);
-const counterPartyOptionsLocal = ref([]);
 
 const props = defineProps({
   isVisible: Boolean,
@@ -295,22 +279,19 @@ watch(
     localFormData.fromBankId = null;
     localFormData.toBankId = null;
     localFormData.memberId = null;
-    localFormData.counterPartyId = null;
     localFormData.bankDetails = [{ bankId: null, amount: "" }];
 
     if (!brandId) {
       bankOptionsLocal.value = [];
       memberOptionsLocal.value = [];
-      counterPartyOptionsLocal.value = [];
       return;
     }
 
     try {
       const params = { brandId };
-      const [bankResp, memberResp, counterPartyResp] = await Promise.all([
-        callApi("/bank", "GET", null),
+      const [bankResp, memberResp] = await Promise.all([
+        callApi("/bank", "GET", null, params),
         callApi("/member", "GET", null, params),
-        callApi("/counterParty", "GET", null),
       ]);
 
       bankOptionsLocal.value = (bankResp?.bankList || []).map((item) => ({
@@ -325,14 +306,9 @@ watch(
         value: item.id,
       }));
 
-      counterPartyOptionsLocal.value = (counterPartyResp?.counterPartyList || []).map((item) => ({
-        label: item.name,
-        value: item.id,
-      }));
     } catch (_) {
       bankOptionsLocal.value = [];
       memberOptionsLocal.value = [];
-      counterPartyOptionsLocal.value = [];
     }
   }
 );
@@ -348,15 +324,17 @@ const currentTypeId = computed(() =>
     : Number(localFormData.typeId || 0)
 );
 
-// bankId: required for deposit, withdrawal, borrow, repay, paymentGatewayCharge, adjustmentIn, adjustmentOut, openingBalance, wrongTransfer, unclaim, other, claim
+// Single bank + amount (not deposit/withdrawal — those use bankDetails or one row UI)
 const showBankId = computed(() =>
-  [1, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13].includes(currentTypeId.value)
+  [6, 7, 8, 10, 11, 12, 13].includes(currentTypeId.value)
 );
 
-const showWithdrawalBankDetails = computed(() => currentTypeId.value === 2);
-// fromBankId, toBankId: required for transfer and balanceWithdraw
-const showFromBank = computed(() => [5, 14].includes(currentTypeId.value));
-const showToBank = computed(() => [5, 14].includes(currentTypeId.value));
+const showDepositWithdrawBankDetails = computed(() =>
+  [1, 2].includes(currentTypeId.value)
+);
+// fromBankId, toBankId: borrow, repay, transfer, balanceWithdraw
+const showFromBank = computed(() => [3, 4, 5, 14].includes(currentTypeId.value));
+const showToBank = computed(() => [3, 4, 5, 14].includes(currentTypeId.value));
 // memberId: required deposit, withdrawal; optional adjustmentIn, adjustmentOut, claim, balanceWithdraw
 const showMemberId = computed(() =>
   [1, 2, 7, 8, 13, 14].includes(currentTypeId.value)
@@ -364,26 +342,36 @@ const showMemberId = computed(() =>
 const requireMemberId = computed(() =>
   [1, 2].includes(currentTypeId.value)
 );
-// counterPartyId: required borrow, repay
-const showCounterPartyId = computed(() =>
-  [3, 4].includes(currentTypeId.value)
-);
-// amount: required for all except transfer (which uses transferOutAmount/transferInAmount)
+// amount: single field (not deposit/withdrawal; borrow/repay use transfer out/in like transfer)
 const showAmount = computed(() =>
-  [1, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14].includes(currentTypeId.value)
+  [6, 7, 8, 10, 11, 12, 13, 14].includes(currentTypeId.value)
 );
-const showTransferOutAmount = computed(() => currentTypeId.value === 5);
-const showTransferInAmount = computed(() => currentTypeId.value === 5);
-// rate: required for transfer
+const showTransferOutAmount = computed(() => [3, 4, 5].includes(currentTypeId.value));
+const showTransferInAmount = computed(() => [3, 4, 5].includes(currentTypeId.value));
+// rate: required for transfer only
 const showRate = computed(() => currentTypeId.value === 5);
 
 const loadingStore = useSubmitLoadingStore();
 
 const requiredFieldsByType = {
-  1: ["brandId", "typeId", "bankId", "memberId", "amount"], // deposit
-  2: ["brandId", "typeId", "memberId"], // withdrawal (bankDetails validated separately)
-  3: ["brandId", "typeId", "bankId", "counterPartyId", "amount"], // borrow
-  4: ["brandId", "typeId", "bankId", "counterPartyId", "amount"], // repay
+  1: ["brandId", "typeId", "memberId"], // deposit (banks validated separately)
+  2: ["brandId", "typeId", "memberId"], // withdrawal
+  3: [
+    "brandId",
+    "typeId",
+    "fromBankId",
+    "toBankId",
+    "transferOutAmount",
+    "transferInAmount",
+  ], // borrow (dual bank, no rate)
+  4: [
+    "brandId",
+    "typeId",
+    "fromBankId",
+    "toBankId",
+    "transferOutAmount",
+    "transferInAmount",
+  ], // repay (dual bank, no rate)
   5: [
     "brandId",
     "typeId",
@@ -396,7 +384,6 @@ const requiredFieldsByType = {
   6: ["brandId", "typeId", "bankId", "amount"], // paymentGatewayCharge
   7: ["brandId", "typeId", "bankId", "amount"], // adjustmentIn (memberId optional)
   8: ["brandId", "typeId", "bankId", "amount"], // adjustmentOut (memberId optional)
-  9: ["brandId", "typeId", "bankId", "amount"], // openingBalance
   10: ["brandId", "typeId", "bankId", "amount"], // wrongTransfer
   11: ["brandId", "typeId", "bankId", "amount"], // unclaim
   12: ["brandId", "typeId", "bankId", "amount"], // other
@@ -404,17 +391,35 @@ const requiredFieldsByType = {
   14: ["brandId", "typeId", "fromBankId", "toBankId", "amount"], // balanceWithdraw (memberId optional)
 };
 
-function addWithdrawalRow() {
+function addBankDetailRow() {
   if (!Array.isArray(localFormData.bankDetails)) {
     localFormData.bankDetails = [];
   }
   localFormData.bankDetails.push({ bankId: null, amount: "" });
 }
 
-function removeWithdrawalRow(index) {
+function removeBankDetailRow(index) {
   if (!Array.isArray(localFormData.bankDetails)) return;
   if (localFormData.bankDetails.length <= 1) return;
   localFormData.bankDetails.splice(index, 1);
+}
+
+function getCleanedBankDetailsRows() {
+  const details = Array.isArray(localFormData.bankDetails) ? localFormData.bankDetails : [];
+  return details
+    .map((d) => ({
+      bankId: d?.bankId ?? null,
+      amount: d?.amount ?? "",
+    }))
+    .filter((d) => d.bankId && d.amount !== "");
+}
+
+function validateDepositWithdrawBankLines() {
+  const cleaned = getCleanedBankDetailsRows();
+  const invalid =
+    cleaned.length === 0 ||
+    cleaned.some((d) => d.bankId === null || d.amount === "" || Number.isNaN(Number(d.amount)));
+  return { cleaned, invalid };
 }
 
 const handleSave = () => {
@@ -436,20 +441,32 @@ const handleSave = () => {
     return;
   }
 
-  if (typeId === 2) {
-    const details = Array.isArray(localFormData.bankDetails) ? localFormData.bankDetails : [];
-    const cleaned = details
-      .map((d) => ({
-        bankId: d?.bankId ?? null,
-        amount: d?.amount ?? "",
-      }))
-      .filter((d) => d.bankId && d.amount !== "");
-
-    const invalid =
-      cleaned.length === 0 ||
-      cleaned.some((d) => d.bankId === null || d.amount === "" || Number.isNaN(Number(d.amount)));
-
+  if (typeId === 1 || typeId === 2) {
+    const { invalid } = validateDepositWithdrawBankLines();
     if (invalid) {
+      window.$message?.error(t("please_fill_in_all_required_fields"));
+      return;
+    }
+  }
+
+  if (typeId === 5) {
+    const r = Number(localFormData.rate);
+    if (!Number.isFinite(r) || r <= 0) {
+      window.$message?.error(t("please_fill_in_all_required_fields"));
+      return;
+    }
+  }
+
+  if ([3, 4, 5].includes(typeId)) {
+    const fromId = Number(localFormData.fromBankId);
+    const toId = Number(localFormData.toBankId);
+    if (!Number.isFinite(fromId) || !Number.isFinite(toId) || fromId === toId) {
+      window.$message?.error(t("please_fill_in_all_required_fields"));
+      return;
+    }
+    const out = Number(localFormData.transferOutAmount);
+    const inn = Number(localFormData.transferInAmount);
+    if (!Number.isFinite(out) || out <= 0 || !Number.isFinite(inn) || inn <= 0) {
       window.$message?.error(t("please_fill_in_all_required_fields"));
       return;
     }
@@ -461,13 +478,51 @@ const handleSave = () => {
     typeId,
   };
 
-  if (typeId === 2) {
-    payload.bankDetails = (localFormData.bankDetails || []).map((d) => ({
-      bankId: Number(d.bankId),
-      amount: Number(d.amount),
-    }));
-    delete payload.bankId;
+  delete payload.counterPartyId;
+  delete payload.transferDirection;
+
+  if ([3, 4, 5].includes(typeId)) {
+    payload.fromBankId = Number(payload.fromBankId);
+    payload.toBankId = Number(payload.toBankId);
+    payload.transferOutAmount = Number(payload.transferOutAmount);
+    payload.transferInAmount = Number(payload.transferInAmount);
     delete payload.amount;
+    delete payload.bankId;
+    delete payload.bankDetails;
+  }
+  if ([3, 4].includes(typeId)) {
+    delete payload.rate;
+  }
+  if (typeId === 5) {
+    payload.rate = Number(payload.rate);
+  }
+
+  if (typeId === 1 || typeId === 2) {
+    const { cleaned } = validateDepositWithdrawBankLines();
+    if (cleaned.length >= 2) {
+      payload.bankDetails = cleaned.map((d) => ({
+        bankId: Number(d.bankId),
+        amount: Number(d.amount),
+      }));
+      delete payload.bankId;
+      delete payload.amount;
+    } else {
+      payload.bankId = Number(cleaned[0].bankId);
+      payload.amount = Number(cleaned[0].amount);
+      delete payload.bankDetails;
+    }
+  }
+
+  if (![3, 4, 5, 14].includes(typeId)) {
+    delete payload.fromBankId;
+    delete payload.toBankId;
+  }
+  if (![3, 4, 5].includes(typeId)) {
+    delete payload.transferOutAmount;
+    delete payload.transferInAmount;
+  }
+  if (typeId !== 5) {
+    delete payload.rate;
   }
 
   emit("save", payload);

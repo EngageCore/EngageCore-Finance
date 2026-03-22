@@ -22,7 +22,6 @@ export const views = {
   'system_user': () => import("@/views/management/user.vue"),
   'master_brand': () => import("@/views/management/brand.vue"),
   'master_bankProvider': () => import("@/views/management/bankProvider.vue"),
-  'master_counterParty': () => import("@/views/management/counterParty.vue"),
   'master_member': () => import("@/views/management/member.vue"),
   'master_bank': () => import("@/views/management/bank.vue"),
   'transaction_list': () => import("@/views/management/transaction.vue"),

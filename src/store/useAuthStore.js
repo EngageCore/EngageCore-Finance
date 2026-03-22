@@ -42,7 +42,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   });
 
   const isSuper = computed(() => {
-    return userInfo.roles.includes('super');
+    return userInfo.roleId == 1;
   });
 
   const isLogin = computed(() => Boolean(token.value));
@@ -164,15 +164,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   }
 
   function hasPageAccess(pageId) {
-    return userInfo.accessPageIds.includes(pageId);
+    return userInfo.accessPageIds.includes(pageId) || isSuper.value;
   }
 
   function hasActionAccess(actionId) {
-    return userInfo.accessActionIds.includes(actionId);
+    return userInfo.accessActionIds.includes(actionId) || isSuper.value;
   }
 
   function hasFeatureAccess(featureId) {
-    return userInfo.accessFeatureIds.includes(featureId);
+    return userInfo.accessFeatureIds.includes(featureId) || isSuper.value;
   }
 
   return {

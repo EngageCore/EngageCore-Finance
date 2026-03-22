@@ -57,6 +57,10 @@
           clearable
         />
       </n-form-item>
+
+      <n-form-item :label="$t('is_counter_party')" path="isCounterParty">
+        <n-switch v-model:value="localFormData.isCounterParty" />
+      </n-form-item>
     </n-form>
   </ReusableSingleModal>
 </template>
@@ -66,6 +70,7 @@ import { computed, reactive, watch, onMounted } from "vue";
 import { useDropdown } from "@/composables/useDropdown";
 import { useI18n } from "vue-i18n";
 import ReusableSingleModal from "@/components/ReusableSingleModal.vue";
+import { NSwitch } from "naive-ui";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 
 const { t } = useI18n();
@@ -88,7 +93,12 @@ const localFormData = reactive({});
 
 watch(
   () => props.formData,
-  (v) => Object.assign(localFormData, v || {}),
+  (v) => {
+    Object.assign(localFormData, v || {});
+    if (localFormData.isCounterParty === undefined || localFormData.isCounterParty === null) {
+      localFormData.isCounterParty = false;
+    }
+  },
   { immediate: true }
 );
 
