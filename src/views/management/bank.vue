@@ -400,7 +400,7 @@ const confirmDeleteBank = async () => {
   if (!row?.id) return;
   deleteSubmitting.value = true;
   try {
-    await callApi(`/banks/${row.id}`, "DELETE", null, null, false);
+    await callApi(`/bank/${row.id}`, "DELETE", {}, {}, false);
     handleMessage(t("bank_deleted"), "success");
     closeDeleteConfirm();
     fetchBankList();
