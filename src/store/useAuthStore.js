@@ -96,21 +96,13 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   // }
 
   async function login(userData, loginToken, redirect = true) {
-    if(userData && Object.keys(userData).length > 0) {
-      userInfo.name = userData.name;
-      userInfo.id = userData.id;
-      userInfo.roleId = userData.roleId;
-      userInfo.statusId = userData.statusId;
-      userInfo.accessPageIds = Array.isArray(userData.accessPageIds) ? userData.accessPageIds.map(id => Number(id)) : [];
-      userInfo.accessActionIds = Array.isArray(userData.accessActionIds) ? userData.accessActionIds.map(id => Number(id)) : [];
-      userInfo.accessFeatureIds = Array.isArray(userData.accessFeatureIds) ? userData.accessFeatureIds.map(id => Number(id)) : [];
-    }
+    getUserInfo();
     const pass = await loginByToken(loginToken);
     // await updateUserRole(userData.roleId);
     if (pass) {
       const isClear = checkTabClear();
       let needRedirect = redirect;
-      if (isClear) needRedirect = false;
+      if (isClear) needRedirect = false;  
       await routeStore.initAuthRoute();
       if (needRedirect) await redirectFromLogin();
     }
