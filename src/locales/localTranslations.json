@@ -244,6 +244,9 @@
     "page_animate_mode": "Page Animate Mode",
     "page_function": "Page Function",
     "password": "Password",
+    "change_password": "Change password",
+    "user_password_updated": "Password updated",
+    "reset_password": "Reset Password",
     "confirm_password": "Confirm Password",
     "please_fill_in_username_and_password": "Please fill in username and password",
     "please_fill_in_all_required_fields": "Please fill in all required fields",
@@ -316,7 +319,8 @@
     "other": "Other",
     "claim": "Claim",
     "balanceWithdraw": "Balance Withdraw",
-    "thirdParty": "Third Party"
+    "thirdParty": "Third Party",
+    "error_1032": "Reset own password please use change password"
   },
   "zh_CN": {
     "${homeRouteName}": "${homeRouteName}",
@@ -563,6 +567,9 @@
     "page_animate_mode": "页面动画模式",
     "page_function": "页面功能",
     "password": "密码",
+    "change_password": "修改密码",
+    "reset_password": "重置密码",
+    "user_password_updated": "密码已更新",
     "confirm_password": "确认密码",
     "please_fill_in_username_and_password": "请填写用户名和密码",
     "please_fill_in_all_required_fields": "请填写所有必填栏位",
@@ -635,6 +642,7 @@
     "other": "其他",
     "claim": "认领",
     "balanceWithdraw": "余额提款",
-    "thirdParty": "第三方"
+    "thirdParty": "第三方",
+    "error_1032": "请使用修改密码功能重置自己的密码"
   }
 }

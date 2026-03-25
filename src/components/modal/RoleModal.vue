@@ -114,7 +114,7 @@ const isVisibleModel = computed({
 
 const PAGE_ACTION_KEYS = Object.freeze({
   role: ["listRole", "addRole", "updateRole"],
-  user: ["listUser", "addUser", "updateUser"],
+  user: ["listUser", "addUser", "updateUser", "updateUserPassword"],
   brand: ["listBrand", "addBrand", "updateBrand"],
   bankProvider: ["listBankProvider", "addBankProvider", "updateBankProvider"],
   member: ["listMember", "addMember", "updateMember"],
@@ -124,6 +124,7 @@ const PAGE_ACTION_KEYS = Object.freeze({
 });
 
 const getActionKind = (actionKey) => {
+  if (actionKey === "updateUserPassword") return "password";
   if (actionKey.startsWith("list")) return "list";
   if (actionKey.startsWith("add")) return "add";
   if (actionKey.startsWith("update")) return "update";
@@ -136,6 +137,7 @@ const getActionLabel = (kind) => {
   if (kind === "add") return t("add");
   if (kind === "update") return t("edit");
   if (kind === "delete") return t("delete");
+  if (kind === "password") return t("reset_password");
   return kind;
 };
 

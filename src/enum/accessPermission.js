@@ -21,6 +21,7 @@ export const ACCESS_ACTIONS = Object.freeze({
   listUser: 4,
   addUser: 5,
   updateUser: 6,
+  updateUserPassword: 27,
 
   // Brand
   listBrand: 7,

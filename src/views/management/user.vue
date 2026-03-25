@@ -11,10 +11,10 @@
   <ReusableTable title="user" :headers="filteredTableHeaders" :data="tableData" :offset="offset" :limit="limit" :totalRows="totalRows" bordered striped @sort="handleSort" @pagination="handlePaginate">
     <template #action="{ row }">
       <div
-        v-if="canEditUser"
+        v-if="canEditUser || canChangeUserPassword"
         class="flex justify-center items-center gap-2"
       >
-        <n-tooltip trigger="hover">
+        <n-tooltip v-if="canEditUser" trigger="hover">
           <template #trigger>
             <n-button
               circle
@@ -34,6 +34,26 @@
           </template>
           {{ $t("edit") }}
         </n-tooltip>
+        <n-tooltip v-if="canChangeUserPassword" trigger="hover">
+          <template #trigger>
+            <n-button
+              circle
+              tertiary
+              type="primary"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="openPasswordModal(row)"
+              :disabled="row.id == 1"
+            >
+              <template #icon>
+                <n-icon class="text-lg">
+                  <KeyOutline />
+                </n-icon>
+              </template>
+            </n-button>
+          </template>
+          {{ $t("reset_password") }}
+        </n-tooltip>
       </div>
     </template>
 
@@ -49,15 +69,52 @@
   </ReusableTable>
 
   <UserModal v-if="isModalVisible" :isVisible="isModalVisible" :formTitle="formTitle" :formData="formData" :isEdit="isEdit" @save="handleSave" @close="closeModal" />
+
+  <n-modal
+    v-model:show="isPasswordModalVisible"
+    preset="dialog"
+    :mask-closable="false"
+  >
+    <template #header>
+      {{ $t("reset_password") }}
+    </template>
+    <div class="flex flex-col gap-3">
+      <div v-if="passwordTargetName" class="text-sm text-gray-500 dark:text-gray-400">
+        {{ passwordTargetName }}
+      </div>
+      <div>
+        <div class="text-sm mb-1">{{ $t("password") }}</div>
+        <n-input
+          v-model:value="passwordForm.password"
+          type="password"
+          show-password-on="mousedown"
+          :placeholder="$t('please_input')"
+          clearable
+        />
+      </div>
+    </div>
+    <template #action>
+      <n-button @click="closePasswordModal">
+        {{ $t("cancel") }}
+      </n-button>
+      <n-button
+        type="primary"
+        :loading="passwordSubmitting"
+        @click="submitPasswordChange"
+      >
+        {{ $t("confirm") }}
+      </n-button>
+    </template>
+  </n-modal>
 </template>
 
 <script setup>
 import ReusableTable from '@/components/ReusableTable.vue';
 import DynamicSearchForm from '@/components/DynamicSearchForm.vue';
 import UserModal from '@/components/modal/UserModal.vue';
-import { PencilOutline } from '@vicons/ionicons5';
+import { PencilOutline, KeyOutline } from '@vicons/ionicons5';
 import { ref, reactive, onMounted, computed } from 'vue';
-import { NButton, NIcon } from 'naive-ui';
+import { NButton, NIcon, NInput, NModal } from 'naive-ui';
 import { useI18n } from "vue-i18n";
 import { useCallApi } from '@/hooks/useCallApi';
 import { useDropdown } from '@/composables/useDropdown';
@@ -80,6 +137,9 @@ const canAddUser = computed(() =>
 );
 const canEditUser = computed(() =>
   authStore.hasActionAccess(ACCESS_ACTIONS.updateUser)
+);
+const canChangeUserPassword = computed(() =>
+  authStore.hasActionAccess(ACCESS_ACTIONS.updateUserPassword)
 );
 
 //#region Form
@@ -123,7 +183,7 @@ const totalRows = ref(3)
 const filteredTableHeaders = computed(() => {
   return tableHeaders.value.filter((header) => {
     if (header.key === "action") {
-      return canEditUser.value;
+      return canEditUser.value || canChangeUserPassword.value;
     }
     return true;
   });
@@ -249,5 +309,52 @@ const handleSave = async (submitData) => {
     loadingStore.endSubmit();
   }
 }
+
+const isPasswordModalVisible = ref(false);
+const passwordTargetId = ref(null);
+const passwordTargetName = ref("");
+const passwordForm = reactive({
+  password: "",
+});
+const passwordSubmitting = ref(false);
+
+const openPasswordModal = (row) => {
+  if (row?.id == 1) return;
+  passwordTargetId.value = row.id;
+  passwordTargetName.value = row.name || "";
+  passwordForm.password = "";
+  isPasswordModalVisible.value = true;
+};
+
+const closePasswordModal = () => {
+  isPasswordModalVisible.value = false;
+  passwordTargetId.value = null;
+  passwordTargetName.value = "";
+  passwordForm.password = "";
+};
+
+const submitPasswordChange = async () => {
+  if (!passwordTargetId.value) return;
+  if (!passwordForm.password) {
+    window.$message?.error(t("please_fill_in_all_required_fields"));
+    return;
+  }
+  passwordSubmitting.value = true;
+  try {
+    await callApi(
+      `/user/${passwordTargetId.value}/password`,
+      "PATCH",
+      { password: passwordForm.password },
+      null,
+      false
+    );
+    handleMessage(t("user_password_updated"), "success");
+    closePasswordModal();
+  } catch (error) {
+    handleApiError(error);
+  } finally {
+    passwordSubmitting.value = false;
+  }
+};
 //#endregion
 </script>
