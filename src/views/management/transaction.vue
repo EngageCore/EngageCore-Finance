@@ -129,6 +129,39 @@
       {{ $t("no_data") }}
     </div>
   </n-modal>
+
+  <n-modal
+    v-model:show="isDeleteConfirmVisible"
+    preset="dialog"
+    :mask-closable="false"
+  >
+    <template #header>
+      {{ $t("tip") }}
+    </template>
+    <div>{{ $t("delete_transaction_confirm") }}</div>
+    <div
+      v-if="rowPendingDelete"
+      class="mt-2 text-sm text-gray-500 dark:text-gray-400"
+    >
+      {{ rowPendingDelete.brandName ? `${rowPendingDelete.brandName} · ` : "" }}
+      {{ t(getTransactionTypeNameById(rowPendingDelete.typeId)) }}
+      <span v-if="rowPendingDelete.amount != null && rowPendingDelete.amount !== ''">
+        · {{ formatAmount(rowPendingDelete.amount) }}
+      </span>
+    </div>
+    <template #action>
+      <n-button @click="closeDeleteConfirm">
+        {{ $t("cancel") }}
+      </n-button>
+      <n-button
+        type="error"
+        :loading="deleteSubmitting"
+        @click="confirmDeleteTransaction"
+      >
+        {{ $t("delete") }}
+      </n-button>
+    </template>
+  </n-modal>
 </template>
 
 <script setup>
@@ -367,7 +400,7 @@ const confirmDeleteTransaction = async () => {
   if (!row?.id) return;
   deleteSubmitting.value = true;
   try {
-    await callApi(`/transaction/${row.id}`, "DELETE", null, null, false);
+    await callApi(`/transaction/${row.id}`, "DELETE", {}, {}, false);
     handleMessage(t("transaction_deleted"), "success");
     closeDeleteConfirm();
     fetchTransactionList();
