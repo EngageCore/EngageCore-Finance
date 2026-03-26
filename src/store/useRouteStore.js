@@ -54,16 +54,6 @@ function getGlobalMenuByBaseRoute(route) {
 }
 function getGlobalMenusByAuthRoutes(routes, authStore) {
   const menus = [];
-  const hasPagePermission = route => {
-    const pageId = route.meta?.pageId;
-    // 没有配置 pageId 的路由不做页面权限控制
-    if (!pageId) return true;
-
-    const accessPageIds = authStore?.userInfo?.accessPageIds || [];
-    if (!Array.isArray(accessPageIds)) return false;
-
-    return accessPageIds.includes(pageId);
-  };
   const typeId = authStore?.userInfo?.typeId || 0;
   // typeId === 2 => super admin (host turnover only)
   // typeId === 1 => brand user (all modules, but no host turnover)
@@ -71,7 +61,7 @@ function getGlobalMenusByAuthRoutes(routes, authStore) {
   
   routes.forEach(route => {
     // Page-level permission check for top-level routes (single-level pages)
-    if (!hasPagePermission(route)) {
+    if (!authStore.hasPageAccess(route.meta?.pageId)) {
       return;
     }
     // Route-level filtering by type
@@ -91,24 +81,10 @@ function getGlobalMenusByAuthRoutes(routes, authStore) {
         menu.children = route.children
           .filter(child => {
             // Page-level permission check for child routes
-            if (!hasPagePermission(child)) return false;
+            if (!authStore.hasPageAccess(child)) return false;
 
             // Filter out hidden menu items
             if (child.meta?.hideInMenu) return false;
-            
-            // Filter turnover leaderboard children based on typeId
-            // Host turnover leaderboard (child route):
-            // - For host/super admin (typeId === 2): show
-            // - For brand user (typeId === 1): hide
-            if (child.name === 'turnover-leaderboard_turnover-leaderboard-host') {
-              return typeId === 2;
-            }
-            // Brand turnover leaderboard (child route):
-            // - For brand user (typeId === 1): show
-            // - For super admin (typeId === 2): hide
-            if (child.name === 'turnover-leaderboard_turnover-leaderboard-brand') {
-              return typeId === 1;
-            }
             
             return true;
           })

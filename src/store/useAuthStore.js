@@ -96,7 +96,17 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   // }
 
   async function login(userData, loginToken, redirect = true) {
-    getUserInfo();
+    if(userData) {
+      const user = userData;
+
+      userInfo.userName = user.name;
+      userInfo.id = user.id;
+      userInfo.roleId = user.roleId;
+      userInfo.statusId = user.statusId;
+      userInfo.accessPageIds = Array.isArray(user.accessPageIds) ? user.accessPageIds.map(id => Number(id)) : [];
+      userInfo.accessActionIds = Array.isArray(user.accessActionIds) ? user.accessActionIds.map(id => Number(id)) : [];
+      userInfo.accessFeatureIds = Array.isArray(user.accessFeatureIds) ? user.accessFeatureIds.map(id => Number(id)) : [];
+    }
     const pass = await loginByToken(loginToken);
     // await updateUserRole(userData.roleId);
     if (pass) {

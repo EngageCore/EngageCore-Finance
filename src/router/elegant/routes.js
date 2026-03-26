@@ -50,6 +50,19 @@ export const customModuleRoutes = [
           keepAlive: true,
           pageId: ACCESS_PAGES.user
         }
+      },
+      {
+        name: 'system_change_password',
+        path: 'change-password',
+        view: () => import("@/views/management/changePassword.vue"),
+        meta: {
+          title: 'change_password',
+          i18nKey: 'change_password',
+          icon: 'fa6-solid:key',
+          order: 3,
+          keepAlive: true,
+          pageId: ACCESS_PAGES.changePassword
+        }
       }
     ]
   },

@@ -9,6 +9,7 @@ export const ACCESS_PAGES = Object.freeze({
   bank: 7,
   transaction: 8,
   winlose: 9,
+  changePassword: 10,
 });
 
 export const ACCESS_ACTIONS = Object.freeze({
