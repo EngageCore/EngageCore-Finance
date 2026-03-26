@@ -173,7 +173,7 @@ const permissionPagesByKey = computed(() =>
 );
 
 const CATEGORY_PAGE_KEYS = Object.freeze({
-  system: ["role", "user"],
+  system: ["role", "user", "changePassword"],
   master: ["brand", "bankProvider", "member", "bank"],
   transaction: ["transaction"],
   report: ["winlose"],
