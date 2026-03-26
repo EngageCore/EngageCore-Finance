@@ -323,7 +323,8 @@
     "claim": "Claim",
     "balanceWithdraw": "Balance Withdraw",
     "thirdParty": "Third Party",
-    "error_1032": "Reset own password please use change password"
+    "error_1032": "Reset own password please use change password",
+    "error_1031": "Old password is incorrect"
   },
   "zh_CN": {
     "${homeRouteName}": "${homeRouteName}",
@@ -649,6 +650,7 @@
     "claim": "认领",
     "balanceWithdraw": "余额提款",
     "thirdParty": "第三方",
-    "error_1032": "请使用修改密码功能重置自己的密码"
+    "error_1032": "请使用修改密码功能重置自己的密码",
+    "error_1031": "原密码不正确"
   }
 }

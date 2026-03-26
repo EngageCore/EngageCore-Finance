@@ -54,6 +54,11 @@ function getGlobalMenuByBaseRoute(route) {
 }
 function getGlobalMenusByAuthRoutes(routes, authStore) {
   const menus = [];
+  const hasPagePermission = pageId => {
+    // routes without pageId do not participate in page-level permission control
+    if (!pageId) return true;
+    return authStore.hasPageAccess(pageId);
+  };
   const typeId = authStore?.userInfo?.typeId || 0;
   // typeId === 2 => super admin (host turnover only)
   // typeId === 1 => brand user (all modules, but no host turnover)
@@ -61,7 +66,7 @@ function getGlobalMenusByAuthRoutes(routes, authStore) {
   
   routes.forEach(route => {
     // Page-level permission check for top-level routes (single-level pages)
-    if (!authStore.hasPageAccess(route.meta?.pageId)) {
+    if (!hasPagePermission(route.meta?.pageId)) {
       return;
     }
     // Route-level filtering by type
@@ -81,7 +86,7 @@ function getGlobalMenusByAuthRoutes(routes, authStore) {
         menu.children = route.children
           .filter(child => {
             // Page-level permission check for child routes
-            if (!authStore.hasPageAccess(child)) return false;
+            if (!hasPagePermission(child.meta?.pageId)) return false;
 
             // Filter out hidden menu items
             if (child.meta?.hideInMenu) return false;
