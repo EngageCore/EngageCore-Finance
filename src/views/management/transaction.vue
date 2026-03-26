@@ -277,6 +277,7 @@ const totalRows = ref(0);
 
 const tableHeaders = ref([
   { label: "action", key: "action", sortable: false },
+  { label: "no", key: "no", sortable: false },
   { label: "brand", key: "brandName", sortable: false },
   { label: "type", key: "typeId", sortable: false },
   { label: "member", key: "memberName", sortable: false },
