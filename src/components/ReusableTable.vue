@@ -51,13 +51,20 @@
           />
         </div>
 
-        <div v-if="paginationEnabled" class="flex justify-end mt-4">
+        <div
+          v-if="paginationEnabled"
+          class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-4"
+        >
+          <n-text depth="3" class="text-sm shrink-0">
+            {{ showingRangeLabel }}
+          </n-text>
           <n-pagination
             v-model:page="pagination.page"
             :page-size="pagination.pageSize"
             :page-count="pageCount"
             show-size-picker
             :page-sizes="[5, 10, 20, 50]"
+            class="ml-auto"
             @update:page="handlePageChange"
             @update:page-size="handlePageSizeChange"
           />
@@ -108,13 +115,20 @@
           />
         </div>
 
-        <div v-if="paginationEnabled" class="flex justify-end mt-4">
+        <div
+          v-if="paginationEnabled"
+          class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-4"
+        >
+          <n-text depth="3" class="text-sm shrink-0">
+            {{ showingRangeLabel }}
+          </n-text>
           <n-pagination
             v-model:page="pagination.page"
             :page-size="pagination.pageSize"
             :page-count="pageCount"
             show-size-picker
             :page-sizes="[5, 10, 20, 50]"
+            class="ml-auto"
             @update:page="handlePageChange"
             @update:page-size="handlePageSizeChange"
           />
@@ -190,6 +204,28 @@ const handlePageSizeChange = (pageSize) => {
 
 const paginationEnabled = computed(
   () => props.pagination && props.totalRows > 0
+)
+
+/** 1-based inclusive range for “Showing x to y of z” (backend-paged tables). */
+const showingRange = computed(() => {
+  const total = props.totalRows
+  if (!total) {
+    return { start: 0, end: 0, total: 0 }
+  }
+  if (!props.data.length) {
+    return { start: 0, end: 0, total }
+  }
+  const start = props.offset + 1
+  const end = Math.min(props.offset + props.data.length, total)
+  return { start, end, total }
+})
+
+const showingRangeLabel = computed(() =>
+  t('table_showing_range', {
+    start: showingRange.value.start,
+    end: showingRange.value.end,
+    total: showingRange.value.total
+  })
 )
 
 const paginatedData = computed(() => {
