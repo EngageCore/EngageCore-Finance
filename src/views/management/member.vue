@@ -32,10 +32,10 @@
     </template>
     <template #action="{ row }">
       <div
-        v-if="canEditMember"
+        v-if="canEditMember || canDeleteMember"
         class="flex justify-center items-center gap-2"
       >
-        <n-tooltip trigger="hover">
+        <n-tooltip v-if="canEditMember" trigger="hover">
           <template #trigger>
             <n-button
               circle
@@ -54,6 +54,25 @@
           </template>
           {{ $t("edit") }}
         </n-tooltip>
+        <n-tooltip v-if="canDeleteMember" trigger="hover">
+          <template #trigger>
+            <n-button
+              circle
+              tertiary
+              type="error"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="openDeleteConfirm(row)"
+            >
+              <template #icon>
+                <n-icon class="text-lg">
+                  <TrashOutline />
+                </n-icon>
+              </template>
+            </n-button>
+          </template>
+          {{ $t("delete") }}
+        </n-tooltip>
       </div>
     </template>
 
@@ -71,6 +90,37 @@
     @save="handleSave"
     @close="closeModal"
   />
+
+  <n-modal
+    v-model:show="isDeleteConfirmVisible"
+    preset="dialog"
+    :mask-closable="false"
+  >
+    <template #header>
+      {{ $t("tip") }}
+    </template>
+    <div>{{ $t("delete_member_confirm") }}</div>
+    <div
+      v-if="rowPendingDelete"
+      class="mt-2 text-sm text-gray-500 dark:text-gray-400"
+    >
+      {{ rowPendingDelete.brandName ? `${rowPendingDelete.brandName} · ` : "" }}
+      {{ rowPendingDelete.code ? `${rowPendingDelete.code} · ` : "" }}
+      {{ rowPendingDelete.name || "" }}
+    </div>
+    <template #action>
+      <n-button @click="closeDeleteConfirm">
+        {{ $t("cancel") }}
+      </n-button>
+      <n-button
+        type="error"
+        :loading="deleteSubmitting"
+        @click="confirmDeleteMember"
+      >
+        {{ $t("delete") }}
+      </n-button>
+    </template>
+  </n-modal>
 
   <n-modal v-model:show="isBulkModalVisible" preset="dialog">
     <template #header>
@@ -107,9 +157,17 @@
 import ReusableTable from "@/components/ReusableTable.vue";
 import DynamicSearchForm from "@/components/DynamicSearchForm.vue";
 import MemberModal from "@/components/modal/MemberModal.vue";
-import { PencilOutline } from "@vicons/ionicons5";
+import { PencilOutline, TrashOutline } from "@vicons/ionicons5";
 import { ref, reactive, onMounted, computed } from "vue";
-import { NButton, NIcon, NModal, NUpload, NUploadDragger, NText } from "naive-ui";
+import {
+  NButton,
+  NIcon,
+  NModal,
+  NTooltip,
+  NUpload,
+  NUploadDragger,
+  NText,
+} from "naive-ui";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
@@ -132,6 +190,9 @@ const canAddMember = computed(() =>
 );
 const canEditMember = computed(() =>
   authStore.hasActionAccess(ACCESS_ACTIONS.updateMember)
+);
+const canDeleteMember = computed(() =>
+  authStore.hasActionAccess(ACCESS_ACTIONS.deleteMember)
 );
 
 //#region FORM
@@ -190,7 +251,7 @@ const totalRows = ref(0);
 const filteredTableHeaders = computed(() => {
   return tableHeaders.value.filter((header) => {
     if (header.key === "action") {
-      return canEditMember.value;
+      return canEditMember.value || canDeleteMember.value;
     }
     return true;
   });
@@ -314,6 +375,36 @@ const handleSave = async (submitData) => {
     handleApiError(error);
   } finally {
     loadingStore.endSubmit();
+  }
+};
+
+const isDeleteConfirmVisible = ref(false);
+const rowPendingDelete = ref(null);
+const deleteSubmitting = ref(false);
+
+const openDeleteConfirm = (row) => {
+  rowPendingDelete.value = row;
+  isDeleteConfirmVisible.value = true;
+};
+
+const closeDeleteConfirm = () => {
+  isDeleteConfirmVisible.value = false;
+  rowPendingDelete.value = null;
+};
+
+const confirmDeleteMember = async () => {
+  const row = rowPendingDelete.value;
+  if (!row?.id) return;
+  deleteSubmitting.value = true;
+  try {
+    await callApi(`/member/${row.id}`, "DELETE", {}, {}, false);
+    handleMessage(t("member_deleted"), "success");
+    closeDeleteConfirm();
+    fetchMemberList();
+  } catch (error) {
+    handleApiError(error);
+  } finally {
+    deleteSubmitting.value = false;
   }
 };
 //#endregion

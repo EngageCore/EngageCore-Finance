@@ -38,6 +38,7 @@ export const ACCESS_ACTIONS = Object.freeze({
   listMember: 16,
   addMember: 17,
   updateMember: 18,
+  deleteMember: 28,
 
   // Bank
   listBank: 19,

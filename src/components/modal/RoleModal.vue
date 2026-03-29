@@ -117,7 +117,7 @@ const PAGE_ACTION_KEYS = Object.freeze({
   user: ["listUser", "addUser", "updateUser", "updateUserPassword"],
   brand: ["listBrand", "addBrand", "updateBrand"],
   bankProvider: ["listBankProvider", "addBankProvider", "updateBankProvider"],
-  member: ["listMember", "addMember", "updateMember"],
+  member: ["listMember", "addMember", "updateMember", "deleteMember"],
   bank: ["listBank", "addBank", "updateBank", "deleteBank"],
   transaction: ["listTransaction", "addTransaction", "deleteTransaction"],
   winlose: ["listWinlose"],
