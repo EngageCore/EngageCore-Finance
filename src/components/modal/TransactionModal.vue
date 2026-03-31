@@ -302,7 +302,7 @@ watch(
       }));
 
       memberOptionsLocal.value = (memberResp?.memberList || []).map((item) => ({
-        label: item.name,
+        label: `(${item.code}) ${item.name}`,
         value: item.id,
       }));
 

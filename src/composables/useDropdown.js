@@ -183,7 +183,7 @@ export function useDropdown() {
   const getMemberOptions = async (includeAll = true) => {
     const resp = await callApi('/member', 'GET');
     let options = (resp.memberList || []).map(item => ({
-      label: item.name,
+      label: `(${item.code}) ${item.name}`,
       value: item.id
     }));
 

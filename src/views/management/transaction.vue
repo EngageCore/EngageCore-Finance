@@ -172,7 +172,7 @@ import { ref, reactive, onMounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
-import { dateFormat, handleMessage, formatAmount } from "@/utils/common";
+import { dateFormat, handleMessage, formatAmount, formatDate } from "@/utils/common";
 import { getTransactionTypeNameById } from "@/enum/transactionType";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
@@ -224,12 +224,20 @@ const fields = ref([
     options: bankOptions,
     colClass: "col-span-12 lg:col-span-3",
   },
+  {
+    id: ["createdStartAt", "createdEndAt"],
+    label: "created_at",
+    type: "daterange",
+    colClass: "col-span-12 lg:col-span-6",
+  },
 ]);
 
 const initialData = reactive({
   brandId: 0,
   typeId: 0,
   bankId: 0,
+  createdStartAt: formatDate(Date.now()),
+  createdEndAt: formatDate(Date.now()),
 });
 
 const handleSearch = (formData) => {
@@ -246,6 +254,8 @@ const handleReset = () => {
     brandId: 0,
     typeId: 0,
     bankId: 0,
+    createdStartAt: formatDate(Date.now()),
+    createdEndAt: formatDate(Date.now()),
   });
   fetchTransactionList();
 };
