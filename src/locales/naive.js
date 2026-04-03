@@ -1,11 +1,13 @@
-import { dateEnUS, dateZhCN, enUS, zhCN } from 'naive-ui';
+import { dateEnUS, dateZhCN, dateIdID, enUS, zhCN, idID } from 'naive-ui';
 
 export const naiveLocales = {
   'zh-CN': zhCN,
-  'en-US': enUS
+  'en-US': enUS,
+  'id-ID': idID
 };
 
 export const naiveDateLocales = {
   'zh-CN': dateZhCN,
-  'en-US': dateEnUS
+  'en-US': dateEnUS,
+  'id-ID': dateIdID
 };

@@ -4,7 +4,8 @@ import i18n from '@/i18n';
 const localeMap = {
   'en-US': 'en_US',
   'zh-CN': 'zh_CN',
-  'zh-TW': 'zh_TW'
+  'zh-TW': 'zh_TW',
+  'id-ID': 'id_ID'
 };
 
 function normalizeLocale(lang) {

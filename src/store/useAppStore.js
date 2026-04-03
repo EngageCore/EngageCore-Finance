@@ -40,7 +40,8 @@ export const useAppStore = defineStore(SetupStoreId.App, () => {
 
   const localeOptions = [
     { label: '中文', key: 'zh-CN' },
-    { label: 'English', key: 'en-US' }
+    { label: 'English', key: 'en-US' },
+    { label: 'Bahasa Indonesia', key: 'id-ID' }
   ];
 
   function changeLocale(lang) {
