@@ -340,9 +340,9 @@ const showDepositWithdrawBankDetails = computed(() =>
 // fromBankId, toBankId: borrow, repay, transfer, balanceWithdraw
 const showFromBank = computed(() => [3, 4, 5, 14].includes(currentTypeId.value));
 const showToBank = computed(() => [3, 4, 5, 14].includes(currentTypeId.value));
-// memberId: required deposit, withdrawal; optional adjustmentIn, adjustmentOut, claim, balanceWithdraw
+// memberId: required deposit, withdrawal; optional adjustmentIn, adjustmentOut, unclaim, balanceWithdraw
 const showMemberId = computed(() =>
-  [1, 2, 7, 8, 13, 14].includes(currentTypeId.value)
+  [1, 2, 7, 8, 11, 14].includes(currentTypeId.value)
 );
 const requireMemberId = computed(() =>
   [1, 2].includes(currentTypeId.value)
