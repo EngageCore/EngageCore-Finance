@@ -213,6 +213,7 @@ import { useI18n } from "vue-i18n";
 import ReusableSingleModal from "@/components/ReusableSingleModal.vue";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { transactionTypeEnum } from "@/enum/transactionType";
 
 const { t } = useI18n();
 const { callApi } = useCallApi();
@@ -226,7 +227,11 @@ const {
 
 const filteredTransactionTypeOptions = computed(() =>
   (transactionTypeOptions.value || []).filter(
-    (opt) => opt.value && opt.value !== 9 && authStore.hasFeatureAccess(opt.value)
+    (opt) =>
+      opt.value &&
+      opt.value !== 9 &&
+      opt.value !== transactionTypeEnum.claim.id &&
+      authStore.hasFeatureAccess(opt.value)
   )
 );
 

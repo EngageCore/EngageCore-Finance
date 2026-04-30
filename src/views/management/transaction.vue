@@ -41,6 +41,28 @@
           </template>
           {{ $t("transaction_details") }}
         </n-tooltip>
+        <n-tooltip
+          v-if="canClaimTransaction && row?.typeId === transactionTypeEnum.unclaim.id"
+          trigger="hover"
+        >
+          <template #trigger>
+            <n-button
+              circle
+              tertiary
+              type="success"
+              size="small"
+              class="!w-8 !h-8 flex items-center justify-center"
+              @click="openClaimConfirm(row)"
+            >
+              <template #icon>
+                <n-icon class="text-lg">
+                  <CheckmarkCircleOutline />
+                </n-icon>
+              </template>
+            </n-button>
+          </template>
+          {{ $t("claim") }}
+        </n-tooltip>
         <n-tooltip v-if="canDeleteTransaction" trigger="hover">
           <template #trigger>
             <n-button
@@ -162,6 +184,39 @@
       </n-button>
     </template>
   </n-modal>
+
+  <n-modal
+    v-model:show="isClaimConfirmVisible"
+    preset="dialog"
+    :mask-closable="false"
+  >
+    <template #header>
+      {{ $t("tip") }}
+    </template>
+    <div>{{ $t("claim_transaction_confirm") }}</div>
+    <div
+      v-if="rowPendingClaim"
+      class="mt-2 text-sm text-gray-500 dark:text-gray-400"
+    >
+      {{ rowPendingClaim.brandName ? `${rowPendingClaim.brandName} · ` : "" }}
+      {{ t(getTransactionTypeNameById(rowPendingClaim.typeId)) }}
+      <span v-if="rowPendingClaim.amount != null && rowPendingClaim.amount !== ''">
+        · {{ formatAmount(rowPendingClaim.amount) }}
+      </span>
+    </div>
+    <template #action>
+      <n-button @click="closeClaimConfirm">
+        {{ $t("cancel") }}
+      </n-button>
+      <n-button
+        type="success"
+        :loading="claimSubmitting"
+        @click="confirmClaimTransaction"
+      >
+        {{ $t("claim") }}
+      </n-button>
+    </template>
+  </n-modal>
 </template>
 
 <script setup>
@@ -173,12 +228,12 @@ import { useI18n } from "vue-i18n";
 import { useCallApi } from "@/hooks/useCallApi";
 import { useDropdown } from "@/composables/useDropdown";
 import { dateFormat, handleMessage, formatAmount, formatDate } from "@/utils/common";
-import { getTransactionTypeNameById } from "@/enum/transactionType";
+import { getTransactionTypeNameById, transactionTypeEnum } from "@/enum/transactionType";
 import { useApiError } from "@/composables/useApiError";
 import { useSubmitLoadingStore } from "@/store/useSubmitLoadingStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { ACCESS_ACTIONS } from "@/enum/accessPermission";
-import { EyeOutline, TrashOutline } from "@vicons/ionicons5";
+import { CheckmarkCircleOutline, EyeOutline, TrashOutline } from "@vicons/ionicons5";
 import { NButton, NDataTable, NIcon, NModal, NTooltip } from "naive-ui";
 
 const { t } = useI18n();
@@ -190,6 +245,9 @@ const canAddTransaction = computed(() =>
 );
 const canDeleteTransaction = computed(() =>
   authStore.hasActionAccess(ACCESS_ACTIONS.deleteTransaction)
+);
+const canClaimTransaction = computed(() =>
+  authStore.hasFeatureAccess(transactionTypeEnum.claim.id)
 );
 
 //#region FORM
@@ -419,6 +477,38 @@ const confirmDeleteTransaction = async () => {
     handleApiError(error);
   } finally {
     deleteSubmitting.value = false;
+  }
+};
+
+const isClaimConfirmVisible = ref(false);
+const rowPendingClaim = ref(null);
+const claimSubmitting = ref(false);
+
+const openClaimConfirm = (row) => {
+  if (!row?.id) return;
+  if (row?.typeId !== transactionTypeEnum.unclaim.id) return;
+  rowPendingClaim.value = row;
+  isClaimConfirmVisible.value = true;
+};
+
+const closeClaimConfirm = () => {
+  isClaimConfirmVisible.value = false;
+  rowPendingClaim.value = null;
+};
+
+const confirmClaimTransaction = async () => {
+  const row = rowPendingClaim.value;
+  if (!row?.id) return;
+  claimSubmitting.value = true;
+  try {
+    await callApi(`/transaction/${row.id}/claim`, "POST", {}, {}, false);
+    handleMessage(t("transaction_claimed"), "success");
+    closeClaimConfirm();
+    fetchTransactionList();
+  } catch (error) {
+    handleApiError(error);
+  } finally {
+    claimSubmitting.value = false;
   }
 };
 //#endregion
