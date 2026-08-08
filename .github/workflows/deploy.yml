@@ -32,6 +32,20 @@ jobs:
           docker save engagecore-finance:$VERSION | gzip > engagecore-finance-$VERSION.tar.gz
           echo "$VERSION" > VERSION.txt
 
+      - name: Check deploy secrets are present
+        run: |
+          missing=""
+          [ -z "${{ secrets.DEPLOY_HOST }}" ]    && missing="$missing DEPLOY_HOST"
+          [ -z "${{ secrets.DEPLOY_USER }}" ]    && missing="$missing DEPLOY_USER"
+          [ -z "${{ secrets.DEPLOY_SSH_KEY }}" ] && missing="$missing DEPLOY_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            echo "Set them under Settings > Secrets and variables > Actions >"
+            echo "Repository secrets (NOT Environment secrets)."
+            exit 1
+          fi
+          echo "All deploy secrets present."
+
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
