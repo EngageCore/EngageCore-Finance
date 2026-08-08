@@ -1,0 +1,62 @@
+name: Deploy engagecore-finance
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(git rev-parse --short HEAD)-$(date +%Y%m%d-%H%M%S)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Build image
+        run: docker build -t engagecore-finance:${{ steps.version.outputs.version }} -t engagecore-finance:latest .
+
+      - name: Save image
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          docker save engagecore-finance:$VERSION | gzip > engagecore-finance-$VERSION.tar.gz
+          echo "$VERSION" > VERSION.txt
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          # Strip CR: the secret may hold CRLF line endings, which openssh
+          # rejects with "error in libcrypto".
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d "\r" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+          DIR: ${{ secrets.DEPLOY_DIR }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TARGET="${DIR:-/opt/engage/repos/EngageCore-Finance}"
+          FILES="engagecore-finance-$VERSION.tar.gz VERSION.txt docker-compose.yml deploy.sh"
+          for extra in rollback.sh list-versions.sh; do
+            [ -f "$extra" ] && FILES="$FILES $extra"
+          done
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$USER@$HOST" "mkdir -p '$TARGET'"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $FILES "$USER@$HOST:$TARGET/"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$USER@$HOST"             "cd '$TARGET' && chmod +x deploy.sh && ./deploy.sh $VERSION"
+
+      - name: Cleanup
+        if: always()
+        run: rm -f engagecore-finance-*.tar.gz VERSION.txt ~/.ssh/deploy_key

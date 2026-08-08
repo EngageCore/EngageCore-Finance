@@ -1,0 +1,22 @@
+services:
+  engagecore-finance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: engagecore-finance:latest
+    container_name: engagecore-finance
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5175:80"
+    mem_limit: 96m
+    networks:
+      - engage-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  engage-net:
+    external: true

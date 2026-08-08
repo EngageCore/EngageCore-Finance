@@ -1,13 +1,17 @@
-"*.vue"    eol=lf
-"*.js"     eol=lf
-"*.ts"     eol=lf
-"*.jsx"    eol=lf
-"*.tsx"    eol=lf
-"*.mjs"    eol=lf
-"*.json"   eol=lf
-"*.html"   eol=lf
-"*.css"    eol=lf
-"*.scss"   eol=lf
-"*.md"     eol=lf
-"*.yaml"   eol=lf
-"*.yml"    eol=lf
+# Committed with LF regardless of the checkout platform. Shell scripts and CI
+# workflows run on Linux; a CRLF deploy.sh fails with "bad interpreter: ^M".
+* text=auto eol=lf
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.conf text eol=lf
+*.sql  text eol=lf
+Dockerfile* text eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.wav binary
