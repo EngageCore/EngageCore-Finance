@@ -78,6 +78,11 @@ for i in $(seq 1 18); do
     echo -e "${GREEN}$NAME is up (health: $STATUS).${NC}"
     docker ps --filter "name=$NAME" --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
     ls -t "$NAME"-*.tar.gz 2>/dev/null | tail -n +6 | xargs -r rm -f
+    # Keep the 3 newest versioned images for rollback and drop the rest.
+    # Without this every deploy leaves a full image behind and the disk fills.
+    docker images "$NAME" --format '{{.CreatedAt}}|{{.Tag}}|{{.ID}}' \
+      | grep -v '|latest|' | sort -r | tail -n +4 | cut -d'|' -f3 \
+      | xargs -r docker rmi -f >/dev/null 2>&1 || true
     echo -e "${GREEN}Deployed $NAME version $VERSION.${NC}"
     exit 0
   fi
