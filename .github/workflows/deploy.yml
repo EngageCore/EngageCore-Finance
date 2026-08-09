@@ -35,11 +35,15 @@ jobs:
       - name: Check deploy secrets are present
         run: |
           missing=""
-          [ -z "${{ secrets.DEPLOY_HOST || secrets.EC2_HOST }}" ]    && missing="$missing DEPLOY_HOST"
-          [ -z "${{ secrets.DEPLOY_USER || secrets.EC2_USER }}" ]    && missing="$missing DEPLOY_USER"
-          [ -z "${{ secrets.DEPLOY_SSH_KEY || secrets.EC2_SSH_KEY }}" ] && missing="$missing DEPLOY_SSH_KEY"
+          [ -z "${{ secrets.DEPLOY_HOST }}" ]    && missing="$missing DEPLOY_HOST"
+          [ -z "${{ secrets.DEPLOY_USER }}" ]    && missing="$missing DEPLOY_USER"
+          [ -z "${{ secrets.DEPLOY_SSH_KEY }}" ] && missing="$missing DEPLOY_SSH_KEY"
+          case "${{ secrets.DEPLOY_HOST }}" in
+            13.214.183.187|54.250.29.129)
+              echo "::error::DEPLOY_HOST is the decommissioned server. Refusing." ; exit 1 ;;
+          esac
           if [ -n "$missing" ]; then
-            echo "::error::Missing repository secrets:$missing (DEPLOY_* or legacy EC2_* accepted)"
+            echo "::error::Missing repository secrets:$missing"
             echo "Set them under Settings > Secrets and variables > Actions >"
             echo "Repository secrets (NOT Environment secrets)."
             exit 1
@@ -51,14 +55,14 @@ jobs:
           mkdir -p ~/.ssh
           # Strip CR: the secret may hold CRLF line endings, which openssh
           # rejects with "error in libcrypto".
-          echo "${{ secrets.DEPLOY_SSH_KEY || secrets.EC2_SSH_KEY }}" | tr -d "\r" > ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d "\r" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DEPLOY_HOST || secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy
         env:
-          HOST: ${{ secrets.DEPLOY_HOST || secrets.EC2_HOST }}
-          USER: ${{ secrets.DEPLOY_USER || secrets.EC2_USER }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
           DIR: ${{ secrets.DEPLOY_DIR }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
