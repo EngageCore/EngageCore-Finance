@@ -69,7 +69,11 @@ fi
 echo -e "${GREEN}Waiting for container...${NC}"
 for i in $(seq 1 18); do
   sleep 5
-  STATUS=$(docker inspect -f '{{.State.Health.Status}}' "$NAME" 2>/dev/null || echo "none")
+  # Template handles containers with no healthcheck. Relying on inspect failing
+  # does not work: it writes a blank line to stdout first, so `|| echo none`
+  # yields "
+none" and never compares equal.
+  STATUS=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$NAME" 2>/dev/null || echo "none")
   RUNNING=$(docker inspect -f '{{.State.Running}}' "$NAME" 2>/dev/null || echo "false")
   if [ "$STATUS" = "healthy" ] || { [ "$STATUS" = "none" ] && [ "$RUNNING" = "true" ]; }; then
     echo -e "${GREEN}$NAME is up (health: $STATUS).${NC}"
