@@ -30,6 +30,10 @@ echo -e "${BLUE}Directory: $APP_DIR   Compose: $DC${NC}"
 command -v docker >/dev/null 2>&1 || { echo -e "${RED}Docker is not installed.${NC}"; exit 1; }
 
 mkdir -p logs uploads
+# The images run as the unprivileged `node` user (uid 1000), but these are
+# bind-mounted host directories owned by root, so the container cannot write
+# its logs. Align ownership with the container user.
+chown -R 1000:1000 logs uploads 2>/dev/null || true
 
 if [ "$NEEDS_ENV" = "1" ] && [ ! -f .env ]; then
   # Deliberately NOT generating a template here. The old script wrote one
